@@ -9,4 +9,6 @@ class MsAreas extends Model {
     use SoftDeletes;
 
     protected $table = 'ms_areas';
+    protected $fillable = ['area_name','status'];
+
 }

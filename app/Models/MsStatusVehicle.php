@@ -9,4 +9,6 @@ class MsStatusVehicle extends Model {
     use SoftDeletes;
 
     protected $table = 'ms_status_vehicle';
+    protected $fillable = ['status_name'];
+
 }
