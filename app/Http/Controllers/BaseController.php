@@ -19,15 +19,14 @@ class BaseController extends Controller
             ],
             'data' => $value->items()
         ];
-        $result = $this->makeResponse(200, null, $paginator);
+        $result = $this->makeResponse(200, 1, null, $paginator);
         return $result; 
     }
 
     protected function makeResponse($code, $status, $message, $data = null){
         $result = [
             'Status' => $status,
-            'resp_code' => $code,
-            'resp_status' => ($code == 200) ? 'success' : 'error',
+            'Code' => $code,
         ];
         $http_code = 200;
         

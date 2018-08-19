@@ -21,6 +21,78 @@ $api->version('v1', function ($api) {
     $api->group(['middleware' => 'auth:api'], function($api) {
         $api->group(['namespace' => 'App\\Api\\V1\\Controllers\\'], function($api) {
             $api->get('tes', 'AuthenticateController@getAuthUser');
+            //alert
+            $api->get('alert', 'AlertController@index');
+            $api->get('alert/{id}', 'AlertController@show');
+            $api->post('alert', 'AlertController@store');
+            $api->put('alert/{id}', 'AlertController@update');
+            $api->delete('alert/{id}', 'AlertController@destroy');
+            //areas
+            $api->get('areas', 'AreasController@index');
+            $api->get('areas/{id}', 'AreasController@show');
+            $api->post('areas', 'AreasController@store');
+            $api->put('areas/{id}', 'AreasController@update');
+            $api->delete('areas/{id}', 'AreasController@destroy');
+            //driver
+            $api->get('driver', 'DriverController@index');
+            $api->get('driver/{id}', 'DriverController@show');
+            $api->post('driver', 'DriverController@store');
+            $api->put('driver/{id}', 'DriverController@update');
+            $api->delete('driver/{id}', 'DriverController@destroy');
+            //notification
+            $api->get('notification', 'NotificationController@index');
+            $api->get('notification/{id}', 'NotificationController@show');
+            $api->post('notification', 'NotificationController@store');
+            $api->put('notification/{id}', 'NotificationController@update');
+            $api->delete('notification/{id}', 'NotificationController@destroy');
+            //transaction vehicle pair
+            $api->get('transaction-vehicle-pair', 'TransactionVehiclePairController@index');
+            $api->get('transaction-vehicle-pair/{id}', 'TransactionVehiclePairController@show');
+            $api->post('transaction-vehicle-pair', 'TransactionVehiclePairController@store');
+            $api->put('transaction-vehicle-pair/{id}', 'TransactionVehiclePairController@update');
+            $api->delete('transaction-vehicle-pair/{id}', 'TransactionVehiclePairController@destroy');
+            //vehicle brand
+            $api->get('vehicle-brand', 'VehicleBrandController@index');
+            $api->get('vehicle-brand/{id}', 'VehicleBrandController@show');
+            $api->post('vehicle-brand', 'VehicleBrandController@store');
+            $api->put('vehicle-brand/{id}', 'VehicleBrandController@update');
+            $api->delete('vehicle-brand/{id}', 'VehicleBrandController@destroy');
+            //vehicle
+            $api->get('vehicle', 'VehicleController@index');
+            $api->get('vehicle/{id}', 'VehicleController@show');
+            $api->post('vehicle', 'VehicleController@store');
+            $api->put('vehicle/{id}', 'VehicleController@update');
+            $api->delete('vehicle/{id}', 'VehicleController@destroy');
+            //vehicle maintenance
+            $api->get('vehicle-maintenance', 'VehicleMaintenanceController@index');
+            $api->get('vehicle-maintenance/{id}', 'VehicleMaintenanceController@show');
+            $api->post('vehicle-maintenance', 'VehicleMaintenanceController@store');
+            $api->put('vehicle-maintenance/{id}', 'VehicleMaintenanceController@update');
+            $api->delete('vehicle-maintenance/{id}', 'VehicleMaintenanceController@destroy');
+            //vehicle model
+            $api->get('vehicle-model', 'VehicleModelController@index');
+            $api->get('vehicle-model/{id}', 'VehicleModelController@show');
+            $api->post('vehicle-model', 'VehicleModelController@store');
+            $api->put('vehicle-model/{id}', 'VehicleModelController@update');
+            $api->delete('vehicle-model/{id}', 'VehicleModelController@destroy');
+            //vehicle status
+            $api->get('vehicle-status', 'VehicleStatusController@index');
+            $api->get('vehicle-status/{id}', 'VehicleStatusController@show');
+            $api->post('vehicle-status', 'VehicleStatusController@store');
+            $api->put('vehicle-status/{id}', 'VehicleStatusController@update');
+            $api->delete('vehicle-status/{id}', 'VehicleStatusController@destroy');
+            //zone
+            $api->get('zone', 'ZoneController@index');
+            $api->get('zone/{id}', 'ZoneController@show');
+            $api->post('zone', 'ZoneController@store');
+            $api->put('zone/{id}', 'ZoneController@update');
+            $api->delete('zone/{id}', 'ZoneController@destroy');
+            //zone detail coordinate
+            $api->get('zone-detail-coordinate', 'ZoneDetailCoordinateController@index');
+            $api->get('zone-detail-coordinate/{id}', 'ZoneDetailCoordinateController@show');
+            $api->post('zone-detail-coordinate', 'ZoneDetailCoordinateController@store');
+            $api->put('zone-detail-coordinate/{id}', 'ZoneDetailCoordinateController@update');
+            $api->delete('zone-detail-coordinate/{id}', 'ZoneDetailCoordinateController@destroy');
         });
     });
 });

@@ -5,15 +5,15 @@ namespace App\Api\V1\Controllers;
 use App\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
 use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
-use App\Models\MsAlert;
+use App\Models\MsZoneDetailCoordinate;
 use Auth;
 
-class AlertController extends BaseController
+class ZoneController extends BaseController
 {
     public function __construct(GlobalCrudRepo $globalCrudRepo)
     {
         $this->globalCrudRepo = $globalCrudRepo;
-        $this->globalCrudRepo->setModel(new MsAlert());
+        $this->globalCrudRepo->setModel(new MsZoneDetailCoordinate());
     }
 
     public function index()
