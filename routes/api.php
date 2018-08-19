@@ -14,11 +14,11 @@
 $api = app('Dingo\Api\Routing\Router');
 
 $api->version('v1', function ($api) {
-    $api->group(['prefix' => 'auth'], function($api) {
+    $api->group(['prefix' => 'auth', 'middleware' => 'cors'], function($api) {
         $api->post('login', 'App\\Api\\V1\\Controllers\\AuthenticateController@login');
     });
 
-    $api->group(['middleware' => 'auth:api'], function($api) {
+    $api->group(['middleware' => ['cors','auth:api']], function($api) {
         $api->group(['namespace' => 'App\\Api\\V1\\Controllers\\'], function($api) {
             $api->get('tes', 'AuthenticateController@getAuthUser');
             //alert
