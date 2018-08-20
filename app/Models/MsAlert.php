@@ -9,6 +9,6 @@ class MsAlert extends Model {
     use SoftDeletes;
 
     protected $table = 'ms_alert';
-    protected $fillable = ['alert_name','notif_id'];
+    protected $fillable = ['alert_code','alert_name','notification_code'];
 
 }

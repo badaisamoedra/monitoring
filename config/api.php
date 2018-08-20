@@ -137,14 +137,20 @@ return [
     |
     */
 
+    // 'errorFormat' => [
+    //     'error' => [
+    //         'message' => ':message',
+    //         'errors' => ':errors',
+    //         'code' => ':code',
+    //         'status_code' => ':status_code',
+    //         'debug' => ':debug'
+    //     ]
+    // ],
     'errorFormat' => [
-        'error' => [
-            'message' => ':message',
-            'errors' => ':errors',
-            'code' => ':code',
-            'status_code' => ':status_code',
-            'debug' => ':debug'
-        ]
+        'Status'  => '0',
+        'Code'    => ':status_code',
+        'Data'    => '',
+        'ErrorMessage' => ':message'
     ],
 
     /*

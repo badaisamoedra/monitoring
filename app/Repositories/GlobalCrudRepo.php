@@ -44,31 +44,22 @@ class GlobalCrudRepo{
         }
     }
 
-    public function update($id, array $data){
+    public function update($column, $value, array $data){
         try {
-            return $this->model->where('id',$id)->update($data);
+            return $this->model->where($column, $value)->update($data);
         }catch(QueryException $e){
             throw new \Exception($e->getMessage(), 500);
         }
     }
 
-    public function delete($id){
-        try {
-            return $this->model->where('id',$id)->delete();
-        }catch(QueryException $e){
-            throw new \Exception($e->getMessage(), 500);
-        }
-
-    }
-
-    public function deleteByParam($column, $value){
+    public function delete($column, $value){
         try {
             return $this->model->where($column, $value)->delete();
         }catch(QueryException $e){
             throw new \Exception($e->getMessage(), 500);
         }
-    }
 
+    }
 
     public function last(){
         try{

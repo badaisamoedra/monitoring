@@ -9,6 +9,6 @@ class MsZoneDetailCoordinate extends Model {
     use SoftDeletes;
 
     protected $table = 'ms_zone_detail_coordinate';
-    protected $fillable = ['zone_id','latitude','longitude','status'];
+    protected $fillable = ['zone_detail_coordinate_code','zone_id','latitude','longitude','status'];
 
 }

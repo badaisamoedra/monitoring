@@ -24,27 +24,32 @@ class AreasController extends BaseController
 
     public function store(Request $request)
     {
-        $input = $request->all();
+        $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
+        $input  = [
+            'area_code' => $this->generateID('ARS-', $lastId, 4),
+            'area_name'  => $request->area_name,
+            'status'     => $request->status,
+        ];
         $new = $this->globalCrudRepo->create($input);
         return $this->makeResponse(200, 1, null, $new);
     }
 
     public function show(Request $request, $id)
     {
-        $data = $this->globalCrudRepo->find('id', $id);
+        $data = $this->globalCrudRepo->find('area_code', $id);
         return $this->makeResponse(200, 1, null, $data);
     }
 
     public function update(Request $request, $id)
     {
         $input = $request->all();
-        $update = $this->globalCrudRepo->update($id, $input);
+        $update = $this->globalCrudRepo->update('area_code' ,$id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }
 
     public function destroy($id)
     {
-        $this->globalCrudRepo->delete($id);
-        return $this->makeResponse(200, 1, null, null);
+        $delete = $this->globalCrudRepo->delete('area_code', $id);
+        return $this->makeResponse(200, 1, null, $delete);
     }
 }

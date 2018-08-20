@@ -14,23 +14,22 @@ class AuthenticateController extends BaseController
 
         try {
             $token = Auth::attempt($credentials);
-
             if(!$token) {
-                return $this->makeResponse(401, 'Email atau Password anda salah.');
+                return $this->makeResponse(401, 0,'Email atau Password anda salah.');
             }
 
         } catch (JWTException $e) {
-            return $this->makeResponse(500, 'could_not_create_token');
+            return $this->makeResponse(500, 0, 'could_not_create_token');
         }
 
         $user_data = Auth::user();
         //$user_data->role = Role::where('id',$user_data->role_id)->first();
 
-        return $this->makeResponse(200, "success", compact('token','user_data'));
+        return $this->makeResponse(200, 1, "",compact('token','user_data'));
     }
 
     public function getAuthUser(){
         $data = Auth::user();
-        return $this->makeResponse(200, "success", compact('data'));
+        return $this->makeResponse(200, 1, "", $data);
     }
 }

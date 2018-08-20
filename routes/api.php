@@ -21,6 +21,19 @@ $api->version('v1', function ($api) {
     $api->group(['middleware' => ['cors','auth:api']], function($api) {
         $api->group(['namespace' => 'App\\Api\\V1\\Controllers\\'], function($api) {
             $api->get('tes', 'AuthenticateController@getAuthUser');
+
+            //user profile
+            $api->get('user-profile', 'UserProfileController@index');
+            $api->get('user-profile/{id}', 'UserProfileController@show');
+            $api->post('register', 'UserProfileController@store');
+            $api->put('user-profile/{id}', 'UserProfileController@update');
+            $api->delete('user-profile/{id}', 'UserProfileController@destroy');
+            //role
+            $api->get('role', 'RoleController@index');
+            $api->get('role/{id}', 'RoleController@show');
+            $api->post('role', 'RoleController@store');
+            $api->put('role/{id}', 'RoleController@update');
+            $api->delete('role/{id}', 'RoleController@destroy');
             //alert
             $api->get('alert', 'AlertController@index');
             $api->get('alert/{id}', 'AlertController@show');

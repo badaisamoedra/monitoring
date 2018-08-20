@@ -9,6 +9,6 @@ class MsZone extends Model {
     use SoftDeletes;
 
     protected $table = 'ms_zone';
-    protected $fillable = ['type_zone','zone_name','status'];
+    protected $fillable = ['zone_code','type_zone','zone_name','status'];
 
 }

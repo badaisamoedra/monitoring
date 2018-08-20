@@ -23,18 +23,19 @@ class BaseController extends Controller
         return $result; 
     }
 
-    protected function makeResponse($code, $status, $message, $data = null){
+    protected function makeResponse($code, $status, $message = "", $data = null){
+
         $result = [
             'Status' => $status,
             'Code' => $code,
+            'Data' => $data,
+            'ErrorMessage' => $message
         ];
         $http_code = 200;
         
         if($code == 401)
             $http_code = $code;
         
-        if(!empty($message)) $result['ErrorMessage'] = $message;
-        if(!empty($data)) $result['Data'] = $data;
         $result = response()->json($result,$http_code);
         return $result;
     }
@@ -101,5 +102,13 @@ class BaseController extends Controller
             $value = $value->with($val);
         }
         return $value;
+    }
+
+    public static function generateID($prefix, $lastID = 0, $length = 3){
+        $prefix = $prefix;
+        $number = $lastID+1;
+        $unique = str_pad($number, $length , "0", STR_PAD_LEFT);
+        $unique = $prefix . $unique;
+        return $unique;
     }
 }

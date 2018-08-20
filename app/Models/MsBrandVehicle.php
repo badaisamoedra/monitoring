@@ -9,6 +9,6 @@ class MsBrandVehicle extends Model {
     use SoftDeletes;
 
     protected $table = 'ms_brand_vehicle';
-    protected $fillable = ['brand_name','status'];
+    protected $fillable = ['brand_vehicle_code','brand_vehicle_name','status'];
 
 }

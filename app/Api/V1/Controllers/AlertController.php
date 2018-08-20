@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
 use App\Models\MsAlert;
 use Auth;
+use DB;
 
 class AlertController extends BaseController
 {
@@ -24,27 +25,32 @@ class AlertController extends BaseController
 
     public function store(Request $request)
     {
-        $input = $request->all();
+        $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
+        $input  = [
+            'alert_code' => $this->generateID('MSA-', $lastId, 4),
+            'alert_name' => $request->alert_name,
+            'notification_code' => $request->notification_code,
+        ];
         $new = $this->globalCrudRepo->create($input);
         return $this->makeResponse(200, 1, null, $new);
     }
 
     public function show(Request $request, $id)
     {
-        $data = $this->globalCrudRepo->find('id', $id);
+        $data = $this->globalCrudRepo->find('alert_code', $id);
         return $this->makeResponse(200, 1, null, $data);
     }
 
     public function update(Request $request, $id)
     {
         $input = $request->all();
-        $update = $this->globalCrudRepo->update($id, $input);
+        $update = $this->globalCrudRepo->update('alert_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }
 
     public function destroy($id)
     {
-        $this->globalCrudRepo->delete($id);
-        return $this->makeResponse(200, 1, null, null);
+        $delete = $this->globalCrudRepo->delete('alert_code', $id);
+        return $this->makeResponse(200, 1, null, $delete);
     }
 }

@@ -9,6 +9,6 @@ class MsNotification extends Model {
     use SoftDeletes;
 
     protected $table = 'ms_notification';
-    protected $fillable = ['notification_name'];
+    protected $fillable = ['notification_code','notification_name'];
 
 }

@@ -24,27 +24,31 @@ class VehicleStatusController extends BaseController
 
     public function store(Request $request)
     {
-        $input = $request->all();
+        $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
+        $input  = [
+            'status_vehicle_code' => $this->generateID('SVC-', $lastId, 4),
+            'status_vehicle_name' => $request->status_vehicle_name,
+        ];
         $new = $this->globalCrudRepo->create($input);
         return $this->makeResponse(200, 1, null, $new);
     }
 
     public function show(Request $request, $id)
     {
-        $data = $this->globalCrudRepo->find('id', $id);
+        $data = $this->globalCrudRepo->find('status_vehicle_code', $id);
         return $this->makeResponse(200, 1, null, $data);
     }
 
     public function update(Request $request, $id)
     {
         $input = $request->all();
-        $update = $this->globalCrudRepo->update($id, $input);
+        $update = $this->globalCrudRepo->update('status_vehicle_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }
 
     public function destroy($id)
     {
-        $this->globalCrudRepo->delete($id);
-        return $this->makeResponse(200, 1, null, null);
+        $delete = $this->globalCrudRepo->delete('status_vehicle_code', $id);
+        return $this->makeResponse(200, 1, null, $delete);
     }
 }
