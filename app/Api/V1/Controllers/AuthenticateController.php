@@ -5,6 +5,7 @@ namespace App\Api\V1\Controllers;
 use App\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
 use Auth;
+use JWTAuth;
 
 class AuthenticateController extends BaseController
 {
@@ -31,5 +32,15 @@ class AuthenticateController extends BaseController
     public function getAuthUser(){
         $data = Auth::user();
         return $this->makeResponse(200, 1, "", $data);
+    }
+
+    public function refreshToken(){
+        $token = JWTAuth::getToken();
+        if(empty($token)){
+            return response()->json(['Status' => 0, 'Code' => 400,  'Data' => '', 'ErrorMessage' => 'Token is not provided'], 400);
+        }else{
+            $newToken = JWTAuth::refresh($token);
+            return $this->makeResponse(200, 1, "", array('token'=>$newToken));
+        }
     }
 }
