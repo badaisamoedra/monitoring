@@ -26,7 +26,7 @@ class TransactionVehiclePairController extends BaseController
     {
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
-            'transaction_vehicle_pair_code' => $this->generateID('TRS-', $lastId, 4),
+            'transaction_vehicle_pair_code' => $this->generateID('TVP-', $lastId, 4),
             'vehicle_code' => $request->vehicle_code,
             'driver_code'  => $request->driver_code,
             'start_date_pair' => $request->start_date_pair,

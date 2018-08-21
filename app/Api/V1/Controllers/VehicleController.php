@@ -26,7 +26,7 @@ class VehicleController extends BaseController
     {
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
-            'vehicle_code' => $this->generateID('VHC-', $lastId, 4),
+            'vehicle_code' => $this->generateID('UNT-', $lastId, 4),
             'license_plate' => $request->license_plate,
             'imei_obd_number' => $request->imei_obd_number,
             'simcard_number' => $request->simcard_number,

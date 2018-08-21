@@ -26,7 +26,7 @@ class VehicleStatusController extends BaseController
     {
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
-            'status_vehicle_code' => $this->generateID('SVC-', $lastId, 4),
+            'status_vehicle_code' => $this->generateID('MSV-', $lastId, 4),
             'status_vehicle_name' => $request->status_vehicle_name,
         ];
         $new = $this->globalCrudRepo->create($input);

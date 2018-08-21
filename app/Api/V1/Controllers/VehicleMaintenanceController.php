@@ -26,7 +26,7 @@ class VehicleMaintenanceController extends BaseController
     {
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
-            'maintenance_vehicle_code' => $this->generateID('VHM-', $lastId, 4),
+            'maintenance_vehicle_code' => $this->generateID('MVL-', $lastId, 4),
             'imei_obd_number_old' => $request->imei_obd_number_old,
             'imei_obd_number_new' => $request->imei_obd_number_new,
             'simcard_number_old'  => $request->simcard_number_old,

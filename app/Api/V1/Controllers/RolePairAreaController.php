@@ -5,15 +5,15 @@ namespace App\Api\V1\Controllers;
 use App\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
 use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
-use App\Models\MsAreas;
+use App\Models\RolePairArea;
 use Auth;
 
-class AreasController extends BaseController
+class RolePairAreaController extends BaseController
 {
     public function __construct(GlobalCrudRepo $globalCrudRepo)
     {
         $this->globalCrudRepo = $globalCrudRepo;
-        $this->globalCrudRepo->setModel(new MsAreas());
+        $this->globalCrudRepo->setModel(new RolePairArea());
     }
 
     public function index()
@@ -26,9 +26,9 @@ class AreasController extends BaseController
     {
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
-            'area_code' => $this->generateID('ARA-', $lastId, 4),
-            'area_name'  => $request->area_name,
-            'status'     => $request->status,
+            'role_area_code' => $this->generateID('RPA-', $lastId, 4),
+            'role_code' => $request->role_code,
+            'area_code' => $request->area_code,
         ];
         $new = $this->globalCrudRepo->create($input);
         return $this->makeResponse(200, 1, null, $new);
@@ -36,20 +36,20 @@ class AreasController extends BaseController
 
     public function show(Request $request, $id)
     {
-        $data = $this->globalCrudRepo->find('area_code', $id);
+        $data = $this->globalCrudRepo->find('role_area_code', $id);
         return $this->makeResponse(200, 1, null, $data);
     }
 
     public function update(Request $request, $id)
     {
         $input = $request->all();
-        $update = $this->globalCrudRepo->update('area_code' ,$id, $input);
+        $update = $this->globalCrudRepo->update('role_area_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }
 
     public function destroy($id)
     {
-        $delete = $this->globalCrudRepo->delete('area_code', $id);
+        $delete = $this->globalCrudRepo->delete('role_area_code', $id);
         return $this->makeResponse(200, 1, null, $delete);
     }
 }

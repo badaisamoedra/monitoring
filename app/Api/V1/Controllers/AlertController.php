@@ -27,7 +27,7 @@ class AlertController extends BaseController
     {
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
-            'alert_code' => $this->generateID('MSA-', $lastId, 4),
+            'alert_code' => $this->generateID('MRT-', $lastId, 4),
             'alert_name' => $request->alert_name,
             'notification_code' => $request->notification_code,
         ];

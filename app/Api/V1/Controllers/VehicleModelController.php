@@ -26,7 +26,7 @@ class VehicleModelController extends BaseController
     {
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
-            'model_vehicle_code' => $this->generateID('MVC-', $lastId, 4),
+            'model_vehicle_code' => $this->generateID('MDL-', $lastId, 4),
             'model_vehicle_name' => $request->model_vehicle_name,
             'brand_vehicle_code' => $request->brand_vehicle_code,
             'status'     => $request->status,

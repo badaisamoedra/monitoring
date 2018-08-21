@@ -26,7 +26,7 @@ class ZoneController extends BaseController
     {
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
-            'zone_code' => $this->generateID('ZNC-', $lastId, 4),
+            'zone_code' => $this->generateID('MSZ-', $lastId, 4),
             'type_zone' => $request->type_zone,
             'zone_name' => $request->zone_name,
             'status'    => $request->status,

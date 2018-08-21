@@ -26,7 +26,7 @@ class RoleController extends BaseController
     {
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
-            'role_code' => $this->generateID('RLS-', $lastId, 4),
+            'role_code' => $this->generateID('ROL-', $lastId, 4),
             'role_name' => $request->role_name,
             'status'    => $request->status,
         ];

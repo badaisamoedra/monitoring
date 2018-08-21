@@ -26,7 +26,7 @@ class StatusAlertController extends BaseController
     {
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
-            'status_alert_code' => $this->generateID('RLS-', $lastId, 4),
+            'status_alert_code' => $this->generateID('SRT-', $lastId, 4),
             'status_alert_name' => $request->status_alert_name,
             'status' => $request->status,
         ];

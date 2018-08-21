@@ -47,6 +47,24 @@ $api->version('v1', function ($api) {
             $api->post('areas', 'AreasController@store');
             $api->put('areas/{id}', 'AreasController@update');
             $api->delete('areas/{id}', 'AreasController@destroy');
+            //zone
+            $api->get('zone', 'ZoneController@index');
+            $api->get('zone/{id}', 'ZoneController@show');
+            $api->post('zone', 'ZoneController@store');
+            $api->put('zone/{id}', 'ZoneController@update');
+            $api->delete('zone/{id}', 'ZoneController@destroy');
+            //zone detail coordinate
+            $api->get('zone-detail-coordinate', 'ZoneDetailCoordinateController@index');
+            $api->get('zone-detail-coordinate/{id}', 'ZoneDetailCoordinateController@show');
+            $api->post('zone-detail-coordinate', 'ZoneDetailCoordinateController@store');
+            $api->put('zone-detail-coordinate/{id}', 'ZoneDetailCoordinateController@update');
+            $api->delete('zone-detail-coordinate/{id}', 'ZoneDetailCoordinateController@destroy');
+            //role pair area
+            $api->get('role-pair-area', 'RolePairAreaController@index');
+            $api->get('role-pair-area/{id}', 'RolePairAreaController@show');
+            $api->post('role-pair-area', 'RolePairAreaController@store');
+            $api->put('role-pair-area/{id}', 'RolePairAreaController@update');
+            $api->delete('role-pair-area/{id}', 'RolePairAreaController@destroy');
             //driver
             $api->get('driver', 'DriverController@index');
             $api->get('driver/{id}', 'DriverController@show');
@@ -95,18 +113,6 @@ $api->version('v1', function ($api) {
             $api->post('vehicle-status', 'VehicleStatusController@store');
             $api->put('vehicle-status/{id}', 'VehicleStatusController@update');
             $api->delete('vehicle-status/{id}', 'VehicleStatusController@destroy');
-            //zone
-            $api->get('zone', 'ZoneController@index');
-            $api->get('zone/{id}', 'ZoneController@show');
-            $api->post('zone', 'ZoneController@store');
-            $api->put('zone/{id}', 'ZoneController@update');
-            $api->delete('zone/{id}', 'ZoneController@destroy');
-            //zone detail coordinate
-            $api->get('zone-detail-coordinate', 'ZoneDetailCoordinateController@index');
-            $api->get('zone-detail-coordinate/{id}', 'ZoneDetailCoordinateController@show');
-            $api->post('zone-detail-coordinate', 'ZoneDetailCoordinateController@store');
-            $api->put('zone-detail-coordinate/{id}', 'ZoneDetailCoordinateController@update');
-            $api->delete('zone-detail-coordinate/{id}', 'ZoneDetailCoordinateController@destroy');
         });
     });
 });

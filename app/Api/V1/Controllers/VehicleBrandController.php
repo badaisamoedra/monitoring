@@ -26,7 +26,7 @@ class VehicleBrandController extends BaseController
     {
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
-            'brand_vehicle_code' => $this->generateID('VHB-', $lastId, 4),
+            'brand_vehicle_code' => $this->generateID('BRN-', $lastId, 4),
             'brand_vehicle_name' => $request->brand_vehicle_name,
             'status' => $request->status,
         ];

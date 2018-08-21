@@ -26,7 +26,7 @@ class ZoneDetailCoordinateController extends BaseController
     {
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
-            'zone_detail_coordinate_code' => $this->generateID('ZDC-', $lastId, 4),
+            'zone_detail_coordinate_code' => $this->generateID('MZC-', $lastId, 4),
             'zone_code'   => $request->zone_code,
             'latitude'  => $request->latitude,
             'longitude' => $request->longitude,
