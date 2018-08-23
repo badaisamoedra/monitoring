@@ -69,4 +69,12 @@ class GlobalCrudRepo{
         }
     }
 
+    public function with(array $with){
+        try {
+            return $this->model->with($with)->get();
+        }catch(QueryException $e){
+            throw new \Exception($e->getMessage(), 500);
+        }
+    }
+
 }
