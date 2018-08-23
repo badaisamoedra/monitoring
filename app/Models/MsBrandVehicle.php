@@ -11,4 +11,8 @@ class MsBrandVehicle extends Model {
     protected $table = 'ms_brand_vehicle';
     protected $fillable = ['brand_vehicle_code','brand_vehicle_name','status'];
 
+    public function vehicle() {
+        return $this->belongsTo('App\Models\MsVehicle', 'brand_vehicle_code', 'brand_vehicle_code');
+    }
+
 }

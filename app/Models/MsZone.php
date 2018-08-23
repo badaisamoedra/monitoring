@@ -11,4 +11,9 @@ class MsZone extends Model {
     protected $table = 'ms_zone';
     protected $fillable = ['zone_code','type_zone','zone_name','status'];
 
+    public function zone_detail()
+    {
+        return $this->hasOne('App\Models\MsZoneDetailCoordinate','zone_code','zone_code');
+    }
+
 }

@@ -11,4 +11,9 @@ class MsAreas extends Model {
     protected $table = 'ms_areas';
     protected $fillable = ['area_code','area_name','status'];
 
+    public function role()
+    {
+        return $this->belongsToMany('App\MsRole','role_pair_area','area_code','role_code');
+    }
+
 }
