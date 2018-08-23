@@ -13,7 +13,7 @@ class MsAreas extends Model {
 
     public function role()
     {
-        return $this->belongsToMany('App\MsRole','role_pair_area','area_code','role_code');
+        return $this->belongsToMany('App\Models\MsRole','role_pair_area','area_code','role_code');
     }
 
 }

@@ -11,4 +11,8 @@ class MsAlert extends Model {
     protected $table = 'ms_alert';
     protected $fillable = ['alert_code','alert_name','notification_code'];
 
+    public function notification() {
+        return $this->belongsTo('App\Models\MsNotification', 'notification_code', 'notification_code');
+    }
+
 }

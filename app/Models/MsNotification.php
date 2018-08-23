@@ -11,4 +11,8 @@ class MsNotification extends Model {
     protected $table = 'ms_notification';
     protected $fillable = ['notification_code','notification_name'];
 
+    public function alert()
+    {
+        return $this->hasMany('App\Models\MsAlert','notification_code','notification_code');
+    }
 }
