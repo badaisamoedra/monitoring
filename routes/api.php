@@ -19,7 +19,8 @@ $api->version('v1', function ($api) {
         $api->get('refresh', 'App\\Api\\V1\\Controllers\\AuthenticateController@refreshToken');
     });
 
-    $api->group(['middleware' => ['cors','auth:api']], function($api) {
+    $api->group(['middleware' => ['cors']], function($api) {
+    // $api->group(['middleware' => ['cors','auth:api']], function($api) {
         $api->group(['namespace' => 'App\\Api\\V1\\Controllers\\'], function($api) {
             $api->get('tes', 'AuthenticateController@getAuthUser');
 
