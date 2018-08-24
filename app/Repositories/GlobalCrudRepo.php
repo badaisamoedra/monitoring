@@ -13,8 +13,8 @@ class GlobalCrudRepo{
 
     public function all($columns = array('*')){
         try {
-            if($columns == array('*')) return $this->model->get();
-            else return $this->model->select($columns)->get();
+            if($columns == array('*')) return $this->model->paginate(MAX_DATA);
+            else return $this->model->select($columns)->paginate(MAX_DATA);
         }catch(QueryException $e){
             throw new \Exception($e->getMessage(), 500);
         }
