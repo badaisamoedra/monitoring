@@ -42,12 +42,15 @@ $api->version('v1', function ($api) {
             $api->post('alert', 'AlertController@store');
             $api->put('alert/{id}', 'AlertController@update');
             $api->delete('alert/{id}', 'AlertController@destroy');
+
+            $api->group(['middleware' => ['auth:api']], function($api) {
             //areas
             $api->get('areas', 'AreasController@index');
             $api->get('areas/{id}', 'AreasController@show');
             $api->post('areas', 'AreasController@store');
             $api->put('areas/{id}', 'AreasController@update');
             $api->delete('areas/{id}', 'AreasController@destroy');
+            });
             //zone
             $api->get('zone', 'ZoneController@index');
             $api->get('zone/{id}', 'ZoneController@show');
