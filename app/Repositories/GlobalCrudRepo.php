@@ -44,6 +44,14 @@ class GlobalCrudRepo{
         }
     }
 
+    public function findObject($value){
+        try {
+            return $this->model->find($value);
+        }catch(QueryException $e){
+            throw new \Exception($e->getMessage(), 500);
+        }
+    }
+
     public function update($column, $value, array $data){
         try {
             return $this->model->where($column, $value)->update($data);
@@ -52,9 +60,33 @@ class GlobalCrudRepo{
         }
     }
 
+    public function updateObject($value, array $data){
+        try {
+            $Obj = $this->model->find($value);
+            foreach($data as $key=>$val){
+                $Obj->{$key} = $val;
+            }
+            $Obj->save();
+            return $Obj;
+        }catch(QueryException $e){
+            throw new \Exception($e->getMessage(), 500);
+        }
+    }
+
     public function delete($column, $value){
         try {
             return $this->model->where($column, $value)->delete();
+        }catch(QueryException $e){
+            throw new \Exception($e->getMessage(), 500);
+        }
+
+    }
+
+    public function deleteObject($value){
+        try {
+            $Obj = $this->model->find($value);
+            $Obj->delete();
+            return $Obj;
         }catch(QueryException $e){
             throw new \Exception($e->getMessage(), 500);
         }

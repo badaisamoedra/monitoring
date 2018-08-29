@@ -10,7 +10,9 @@
         "vlucas/phpdotenv": "~2.2",
         "dingo/api": "2.0.0-alpha1",
         "tymon/jwt-auth": "1.0.0-rc.1",
-        "irazasyed/jwt-auth-guard": "^1.0"
+        "irazasyed/jwt-auth-guard": "^1.0",
+        "mongodb/mongodb": "^1.4",
+        "jenssegers/mongodb": "3.3.0"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

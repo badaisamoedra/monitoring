@@ -19,7 +19,7 @@ $api->version('v1', function ($api) {
         $api->get('refresh', 'App\\Api\\V1\\Controllers\\AuthenticateController@refreshToken');
     });
 
-    $api->group(['middleware' => ['cors','auth:api']], function($api) {
+    $api->group(['middleware' => ['cors']], function($api) {
         $api->group(['namespace' => 'App\\Api\\V1\\Controllers\\'], function($api) {
             $api->get('tes', 'AuthenticateController@getAuthUser');
 
@@ -113,6 +113,13 @@ $api->version('v1', function ($api) {
             $api->post('vehicle-status', 'VehicleStatusController@store');
             $api->put('vehicle-status/{id}', 'VehicleStatusController@update');
             $api->delete('vehicle-status/{id}', 'VehicleStatusController@destroy');
+            //mw mapping
+            $api->get('mw-mapping', 'MappingController@index');
+            $api->get('mw-mapping/{id}', 'MappingController@show');
+            $api->post('mw-mapping', 'MappingController@store');
+            $api->put('mw-mapping/{id}', 'MappingController@update');
+            $api->delete('mw-mapping/{id}', 'MappingController@destroy');
+
         });
     });
 });
