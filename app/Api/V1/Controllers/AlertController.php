@@ -19,7 +19,6 @@ class AlertController extends BaseController
 
     public function index()
     {
-        echo phpinfo();die();
         $data = $this->globalCrudRepo->all();
         return $this->makeResponse(200, 1, null, $data);
     }
