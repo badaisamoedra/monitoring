@@ -40,6 +40,7 @@ class VehicleController extends BaseController
             'date_installation' => $request->date_installation,
             'speed_limit' => $request->speed_limit,
             'odometer' => $request->odometer,
+            'area_code' => $request->area_code,
             'status'=> $request->status,
         ];
         $new = $this->globalCrudRepo->create($input);
