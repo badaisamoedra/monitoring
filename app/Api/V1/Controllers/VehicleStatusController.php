@@ -28,6 +28,7 @@ class VehicleStatusController extends BaseController
         $input  = [
             'status_vehicle_code' => $this->generateID('MSV-', $lastId, 4),
             'status_vehicle_name' => $request->status_vehicle_name,
+            'color_hex' => $request->color_hex,
         ];
         $new = $this->globalCrudRepo->create($input);
         return $this->makeResponse(200, 1, null, $new);
