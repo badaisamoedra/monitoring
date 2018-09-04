@@ -9,6 +9,6 @@ class MsStatusAlert extends Model {
     use SoftDeletes;
 
     protected $table = 'ms_status_alert';
-    protected $fillable = ['status_alert_code','status_alert_name','status'];
+    protected $fillable = ['status_alert_code','status_alert_name','status','status_alert_color_hex'];
 
 }

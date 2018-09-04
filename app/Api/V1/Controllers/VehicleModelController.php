@@ -27,14 +27,17 @@ class VehicleModelController extends BaseController
         $this->validate($request, [
             'model_vehicle_name' => 'required',
             'brand_vehicle_code' => 'required',
-            'status'     => 'required',
+            'fuel_ratio' => 'required',
+            'status'     => 'required'
+            
         ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
             'model_vehicle_code' => $this->generateID('MDL-', $lastId, 4),
             'model_vehicle_name' => $request->model_vehicle_name,
             'brand_vehicle_code' => $request->brand_vehicle_code,
-            'status'     => $request->status,
+            'fuel_ratio' => $request->fuel_ratio,
+            'status'     => $request->status
         ];
         $new = $this->globalCrudRepo->create($input);
         return $this->makeResponse(200, 1, null, $new);
@@ -51,6 +54,7 @@ class VehicleModelController extends BaseController
         $this->validate($request, [
             'model_vehicle_name' => 'sometimes|required',
             'brand_vehicle_code' => 'sometimes|required',
+            'fuel_ratio' => 'sometimes|required',
             'status'     => 'sometimes|required',
         ]);
         $input = $request->except(['token']);

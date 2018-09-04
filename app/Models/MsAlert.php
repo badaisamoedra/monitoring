@@ -9,7 +9,7 @@ class MsAlert extends Model {
     use SoftDeletes;
 
     protected $table = 'ms_alert';
-    protected $fillable = ['alert_code','alert_name','notification_code'];
+    protected $fillable = ['alert_code','alert_name','notification_code','provision_alert_name','provision_alert_code','score','status_alert_priority_code'];
 
     public function notification() {
         return $this->belongsTo('App\Models\MsNotification', 'notification_code', 'notification_code');

@@ -27,13 +27,22 @@ class AlertController extends BaseController
     {
         $this->validate($request, [
             'alert_name' => 'required',
-            'notification_code' => 'required'
+            'notification_code' => 'required',
+            'provision_alert_name' => 'required',
+            'provision_alert_code' => 'required',
+            'score' => 'required',
+            'status_alert_priority_code' => 'required'
+            
         ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
             'alert_code' => $this->generateID('MRT-', $lastId, 4),
             'alert_name' => $request->alert_name,
             'notification_code' => $request->notification_code,
+            'provision_alert_name' => $request->provision_alert_name,
+            'provision_alert_code' => $request->provision_alert_code,
+            'score' => $request->score,
+            'status_alert_priority_code' => $request->status_alert_priority_code
         ];
         $new = $this->globalCrudRepo->create($input);
         return $this->makeResponse(200, 1, null, $new);
@@ -49,7 +58,11 @@ class AlertController extends BaseController
     {
         $this->validate($request, [
             'alert_name' => 'sometimes|required',
-            'notification_code' => 'sometimes|required'
+            'notification_code' => 'sometimes|required',
+            'provision_alert_name' => 'sometimes|required',
+            'provision_alert_code' => 'sometimes|required',
+            'score' => 'sometimes|required',
+            'status_alert_priority_code' => 'sometimes|required'
         ]);
         $input = $request->except(['token']);
         $update = $this->globalCrudRepo->update('alert_code', $id, $input);

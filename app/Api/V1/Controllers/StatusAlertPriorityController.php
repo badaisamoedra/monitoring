@@ -5,15 +5,15 @@ namespace App\Api\V1\Controllers;
 use App\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
 use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
-use App\Models\MsStatusAlert;
+use App\Models\MsStatusAlertPriority;
 use Auth;
 
-class StatusAlertController extends BaseController
+class StatusAlertPriorityController extends BaseController
 {
     public function __construct(GlobalCrudRepo $globalCrudRepo)
     {
         $this->globalCrudRepo = $globalCrudRepo;
-        $this->globalCrudRepo->setModel(new MsStatusAlert());
+        $this->globalCrudRepo->setModel(new MsStatusAlertPriority());
     }
 
     public function index()
@@ -25,16 +25,14 @@ class StatusAlertController extends BaseController
     public function store(Request $request)
     {
         $this->validate($request, [
-            'status_alert_name' => 'required',
-            'status_alert_color_hex' => 'required',
-            'status' => 'required'
+            'alert_priority_name' => 'required',
+            'alert_priority_color_hex' => 'required'
         ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
-            'status_alert_code' => $this->generateID('SRT-', $lastId, 4),
-            'status_alert_name' => $request->status_alert_name,
-            'status_alert_color_hex' => $request->status_alert_color_hex,
-            'status' => $request->status
+            'alert_priority_code' => $this->generateID('STP-', $lastId, 4),
+            'alert_priority_name' => $request->alert_priority_name,
+            'alert_priority_color_hex' => $request->alert_priority_color_hex
         ];
         $new = $this->globalCrudRepo->create($input);
         return $this->makeResponse(200, 1, null, $new);
@@ -42,25 +40,24 @@ class StatusAlertController extends BaseController
 
     public function show(Request $request, $id)
     {
-        $data = $this->globalCrudRepo->find('status_alert_code', $id);
+        $data = $this->globalCrudRepo->find('alert_priority_code', $id);
         return $this->makeResponse(200, 1, null, $data);
     }
 
     public function update(Request $request, $id)
     {
         $this->validate($request, [
-            'status_alert_name' => 'sometimes|required',
-            'status_alert_color_hex' => 'sometimes|required',
-            'status' => 'sometimes|required',
+            'alert_priority_name' => 'sometimes|required',
+            'alert_priority_color_hex' => 'sometimes|required'
         ]);
         $input = $request->except(['token']);
-        $update = $this->globalCrudRepo->update('status_alert_code', $id, $input);
+        $update = $this->globalCrudRepo->update('alert_priority_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }
 
     public function destroy($id)
     {
-        $delete = $this->globalCrudRepo->delete('status_alert_code', $id);
+        $delete = $this->globalCrudRepo->delete('alert_priority_code', $id);
         return $this->makeResponse(200, 1, null, $delete);
     }
 }
