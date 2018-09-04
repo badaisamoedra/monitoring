@@ -24,6 +24,13 @@ class TransactionVehiclePairController extends BaseController
 
     public function store(Request $request)
     {
+        $this->validate($request,[
+            'vehicle_code' => 'required',
+            'driver_code'  => 'required',
+            'start_date_pair' => 'required',
+            'end_date_pair' => 'required',
+            'status' => 'required',
+        ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
             'transaction_vehicle_pair_code' => $this->generateID('TVP-', $lastId, 4),
@@ -45,7 +52,14 @@ class TransactionVehiclePairController extends BaseController
 
     public function update(Request $request, $id)
     {
-        $input = $request->all();
+        $this->validate($request,[
+            'vehicle_code' => 'sometimes|required',
+            'driver_code'  => 'sometimes|required',
+            'start_date_pair' => 'sometimes|required',
+            'end_date_pair' => 'sometimes|required',
+            'status' => 'sometimes|required',
+        ]);
+        $input = $request->except(['token']);
         $update = $this->globalCrudRepo->update('transaction_vehicle_pair_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }

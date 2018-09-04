@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use DB;
 use Response;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Dingo\Api\Exception\ValidationHttpException;
 
 class BaseController extends Controller
 {
@@ -110,5 +112,24 @@ class BaseController extends Controller
         $unique = str_pad($number, $length , "0", STR_PAD_LEFT);
         $unique = $prefix . $unique;
         return $unique;
+    }
+
+    public function validate(
+        Request $request,
+        array $rules,
+        array $messages = [],
+        array $customAttributes = [])
+    {
+        $validator = $this->getValidationFactory()
+            ->make(
+                $request->all(),
+                $rules, $messages,
+                $customAttributes
+            );
+        if ($validator->fails()) {
+            throw new ValidationHttpException(
+                $validator->errors()
+            );
+        }
     }
 }

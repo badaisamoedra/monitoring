@@ -24,6 +24,10 @@ class StatusAlertController extends BaseController
 
     public function store(Request $request)
     {
+        $this->validate($request, [
+            'status_alert_name' => 'required',
+            'status' => 'required',
+        ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
             'status_alert_code' => $this->generateID('SRT-', $lastId, 4),
@@ -42,7 +46,11 @@ class StatusAlertController extends BaseController
 
     public function update(Request $request, $id)
     {
-        $input = $request->all();
+        $this->validate($request, [
+            'status_alert_name' => 'sometimes|required',
+            'status' => 'sometimes|required',
+        ]);
+        $input = $request->except(['token']);
         $update = $this->globalCrudRepo->update('status_alert_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }

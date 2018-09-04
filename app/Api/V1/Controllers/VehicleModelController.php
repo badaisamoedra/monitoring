@@ -24,6 +24,11 @@ class VehicleModelController extends BaseController
 
     public function store(Request $request)
     {
+        $this->validate($request, [
+            'model_vehicle_name' => 'required',
+            'brand_vehicle_code' => 'required',
+            'status'     => 'required',
+        ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
             'model_vehicle_code' => $this->generateID('MDL-', $lastId, 4),
@@ -43,7 +48,12 @@ class VehicleModelController extends BaseController
 
     public function update(Request $request, $id)
     {
-        $input = $request->all();
+        $this->validate($request, [
+            'model_vehicle_name' => 'sometimes|required',
+            'brand_vehicle_code' => 'sometimes|required',
+            'status'     => 'sometimes|required',
+        ]);
+        $input = $request->except(['token']);
         $update = $this->globalCrudRepo->update('model_vehicle_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }

@@ -24,6 +24,23 @@ class VehicleController extends BaseController
 
     public function store(Request $request)
     {
+        $this->validate($request, [
+            'license_plate' => 'required',
+            'imei_obd_number' => 'required',
+            'simcard_number' => 'required',
+            'year_of_vehicle' => 'required',
+            'color_vehicle' => 'required',
+            'brand_vehicle_code' => 'required',
+            'model_vehicle_code' => 'required',
+            'chassis_number' => 'required',
+            'machine_number' => 'required',
+            'date_stnk' => 'required',
+            'date_installation' => 'required',
+            'speed_limit' => 'required',
+            'odometer' => 'required',
+            'area_code' => 'required',
+            'status'=> 'required',
+        ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
             'vehicle_code' => $this->generateID('UNT-', $lastId, 4),
@@ -55,7 +72,24 @@ class VehicleController extends BaseController
 
     public function update(Request $request, $id)
     {
-        $input = $request->all();
+        $this->validate($request, [
+            'license_plate' => 'sometimes|required',
+            'imei_obd_number' => 'sometimes|required',
+            'simcard_number' => 'sometimes|required',
+            'year_of_vehicle' => 'sometimes|required',
+            'color_vehicle' => 'sometimes|required',
+            'brand_vehicle_code' => 'sometimes|required',
+            'model_vehicle_code' => 'sometimes|required',
+            'chassis_number' => 'sometimes|required',
+            'machine_number' => 'sometimes|required',
+            'date_stnk' => 'sometimes|required',
+            'date_installation' => 'sometimes|required',
+            'speed_limit' => 'sometimes|required',
+            'odometer' => 'sometimes|required',
+            'area_code' => 'sometimes|required',
+            'status'=> 'sometimes|required',
+        ]);
+        $input = $request->except(['token']);
         $update = $this->globalCrudRepo->update('vehicle_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }

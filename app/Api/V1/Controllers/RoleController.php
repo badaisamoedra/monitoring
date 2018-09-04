@@ -24,6 +24,10 @@ class RoleController extends BaseController
 
     public function store(Request $request)
     {
+        $this->validate($request,[
+            'role_name' => 'required',
+            'status'    => 'required',
+        ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
             'role_code' => $this->generateID('ROL-', $lastId, 4),
@@ -42,7 +46,11 @@ class RoleController extends BaseController
 
     public function update(Request $request, $id)
     {
-        $input = $request->all();
+        $this->validate($request,[
+            'role_name' => 'sometimes|required',
+            'status'    => 'sometimes|required',
+        ]);
+        $input = $request->except(['token']);
         $update = $this->globalCrudRepo->update('role_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }

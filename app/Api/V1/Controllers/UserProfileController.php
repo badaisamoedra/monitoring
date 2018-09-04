@@ -26,6 +26,18 @@ class UserProfileController extends BaseController
 
     public function store(Request $request)
     {
+        $this->validate($request, [
+            'email'      => 'required',
+            'password'   => 'required',
+            'first_name' => 'required',
+            'last_name'  => 'required',
+            'no_telp'    => 'required',
+            'identity'   => 'required',
+            'telegram'   => 'required',
+            'role_code'  => 'required',
+            'notification_code' => 'required',
+            'status'     => 'required',
+        ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
             'user_profile_code' => $this->generateID('USR-', $lastId, 4),
@@ -52,7 +64,19 @@ class UserProfileController extends BaseController
 
     public function update(Request $request, $id)
     {
-        $input = $request->all();
+        $this->validate($request, [
+            'email'      => 'sometimes|required',
+            'password'   => 'sometimes|required',
+            'first_name' => 'sometimes|required',
+            'last_name'  => 'sometimes|required',
+            'no_telp'    => 'sometimes|required',
+            'identity'   => 'sometimes|required',
+            'telegram'   => 'sometimes|required',
+            'role_code'  => 'sometimes|required',
+            'notification_code' => 'sometimes|required',
+            'status'     => 'sometimes|required',
+        ]);
+        $input = $request->except(['token']);
         $update = $this->globalCrudRepo->update('user_profile_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }

@@ -24,6 +24,9 @@ class NotificationController extends BaseController
 
     public function store(Request $request)
     {
+        $this->validate($request, [
+            'notification_name' => 'required',
+        ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
             'notification_code' => $this->generateID('NTF-', $lastId, 4),
@@ -41,7 +44,10 @@ class NotificationController extends BaseController
 
     public function update(Request $request, $id)
     {
-        $input = $request->all();
+        $this->validate($request, [
+            'notification_name' => 'sometimes|required',
+        ]);
+        $input = $request->except(['token']);
         $update = $this->globalCrudRepo->update('notification_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }

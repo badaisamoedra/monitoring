@@ -24,6 +24,15 @@ class VehicleMaintenanceController extends BaseController
 
     public function store(Request $request)
     {
+        $this->validate($request, [
+            'imei_obd_number_old' => 'required',
+            'imei_obd_number_new' => 'required',
+            'simcard_number_old'  => 'required',
+            'simcard_number_new'  => 'required',
+            'start_date_maintenance' => 'required',
+            'end_date_maintenance' => 'required',
+            'status' => 'required',
+        ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
             'maintenance_vehicle_code' => $this->generateID('MVL-', $lastId, 4),
@@ -47,7 +56,16 @@ class VehicleMaintenanceController extends BaseController
 
     public function update(Request $request, $id)
     {
-        $input = $request->all();
+        $this->validate($request, [
+            'imei_obd_number_old' => 'sometimes|required',
+            'imei_obd_number_new' => 'sometimes|required',
+            'simcard_number_old'  => 'sometimes|required',
+            'simcard_number_new'  => 'sometimes|required',
+            'start_date_maintenance' => 'sometimes|required',
+            'end_date_maintenance' => 'sometimes|required',
+            'status' => 'sometimes|required',
+        ]);
+        $input = $request->except(['token']);
         $update = $this->globalCrudRepo->update('maintenance_vehicle_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }

@@ -24,6 +24,12 @@ class DriverController extends BaseController
 
     public function store(Request $request)
     {
+        $this->validate($request, [
+            'name'        => 'required',
+            'spk_number'  => 'required',
+            'area_code'   => 'required',
+            'status'      => 'required',
+        ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
             'driver_code' => $this->generateID('DRV-', $lastId, 4),
@@ -44,7 +50,13 @@ class DriverController extends BaseController
 
     public function update(Request $request, $id)
     {
-        $input = $request->all();
+        $this->validate($request, [
+            'name'        => 'sometimes|required',
+            'spk_number'  => 'sometimes|required',
+            'area_code'   => 'sometimes|required',
+            'status'      => 'sometimes|required',
+        ]);
+        $input = $request->except(['token']);
         $update = $this->globalCrudRepo->update('driver_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }

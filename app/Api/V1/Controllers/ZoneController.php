@@ -24,6 +24,11 @@ class ZoneController extends BaseController
 
     public function store(Request $request)
     {
+        $this->validate($request, [
+            'type_zone' => 'required',
+            'zone_name' => 'required',
+            'status'    => 'required',
+        ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
             'zone_code' => $this->generateID('MSZ-', $lastId, 4),
@@ -43,7 +48,12 @@ class ZoneController extends BaseController
 
     public function update(Request $request, $id)
     {
-        $input = $request->all();
+        $this->validate($request, [
+            'type_zone' => 'sometimes|required',
+            'zone_name' => 'sometimes|required',
+            'status'    => 'sometimes|required',
+        ]);
+        $input = $request->except(['token']);
         $update = $this->globalCrudRepo->update('zone_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }

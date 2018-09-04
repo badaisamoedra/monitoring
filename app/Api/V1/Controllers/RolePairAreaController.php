@@ -24,6 +24,10 @@ class RolePairAreaController extends BaseController
 
     public function store(Request $request)
     {
+        $this->validate($request,[
+            'role_code' => 'required',
+            'area_code' => 'required',
+        ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
             'role_area_code' => $this->generateID('RPA-', $lastId, 4),
@@ -42,7 +46,11 @@ class RolePairAreaController extends BaseController
 
     public function update(Request $request, $id)
     {
-        $input = $request->all();
+        $this->validate($request,[
+            'role_code' => 'sometimes|required',
+            'area_code' => 'sometimes|required',
+        ]);
+        $input = $request->except(['token']);
         $update = $this->globalCrudRepo->update('role_area_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }

@@ -24,6 +24,10 @@ class VehicleStatusController extends BaseController
 
     public function store(Request $request)
     {
+        $this->validate($request, [
+            'status_vehicle_name' => 'required',
+            'color_hex' => 'required',
+        ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
             'status_vehicle_code' => $this->generateID('MSV-', $lastId, 4),
@@ -42,7 +46,11 @@ class VehicleStatusController extends BaseController
 
     public function update(Request $request, $id)
     {
-        $input = $request->all();
+        $this->validate($request, [
+            'status_vehicle_name' => 'sometimes|required',
+            'color_hex' => 'sometimes|required',
+        ]);
+        $input = $request->except(['token']);
         $update = $this->globalCrudRepo->update('status_vehicle_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }
