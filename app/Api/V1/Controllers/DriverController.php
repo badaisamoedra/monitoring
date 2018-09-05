@@ -32,7 +32,7 @@ class DriverController extends BaseController
         ]);
         $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
         $input  = [
-            'driver_code' => $this->generateID('DRV-', $lastId, 4),
+            'driver_code' => $this->generateID('DRV-', $lastId, 6),
             'name'        => $request->name,
             'spk_number'  => $request->spk_number,
             'area_code'   => $request->area_code,
