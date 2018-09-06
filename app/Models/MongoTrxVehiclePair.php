@@ -5,10 +5,10 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 
-class MongoMsAlert extends Eloquent {
+class MongoTrxVehiclePair extends Eloquent {
 
     protected $connection = 'mongodb';
-    protected $collection = 'mongo_ms_alert';
+    protected $collection = 'mongo_trx_vehicle_pair';
 
     // protected $fillable = [
         
