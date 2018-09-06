@@ -18,7 +18,7 @@ class ZoneController extends BaseController
 
     public function index()
     {
-        $data = $this->globalCrudRepo->all();
+        $data = $this->globalCrudRepo->all(['zone_detail']);
         return $this->makeResponse(200, 1, null, $data);
     }
 
@@ -42,7 +42,7 @@ class ZoneController extends BaseController
 
     public function show(Request $request, $id)
     {
-        $data = $this->globalCrudRepo->find('zone_code', $id);
+        $data = $this->globalCrudRepo->find('zone_code', $id, ['zone_detail']);
         return $this->makeResponse(200, 1, null, $data);
     }
 

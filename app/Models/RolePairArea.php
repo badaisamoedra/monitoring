@@ -11,4 +11,13 @@ class RolePairArea extends Model {
     protected $table = 'role_pair_area';
     protected $fillable = ['role_area_code','role_code','area_code'];
 
+    public function role()
+    {
+        return $this->hasOne('App\Models\MsRole','role_code','role_code');
+    }
+
+    public function area()
+    {
+        return $this->hasOne('App\Models\MsAreas','area_code','area_code');
+    }
 }
