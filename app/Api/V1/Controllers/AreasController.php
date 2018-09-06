@@ -18,7 +18,7 @@ class AreasController extends BaseController
 
     public function index()
     {
-        $data = $this->globalCrudRepo->all();
+        $data = $this->globalCrudRepo->all(['role']);
         return $this->makeResponse(200, 1, null, $data);
     }
 
@@ -41,7 +41,7 @@ class AreasController extends BaseController
 
     public function show(Request $request, $id)
     {
-        $data = $this->globalCrudRepo->find('area_code', $id);
+        $data = $this->globalCrudRepo->find('area_code', $id, ['role']);
         return $this->makeResponse(200, 1, null, $data);
     }
 

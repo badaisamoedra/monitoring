@@ -31,6 +31,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'identity', 
         'telegram', 
         'role_code', 
+        'notification_code', 
         'status'
     ];
 

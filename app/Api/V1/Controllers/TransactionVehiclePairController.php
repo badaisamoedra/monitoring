@@ -18,7 +18,7 @@ class TransactionVehiclePairController extends BaseController
 
     public function index()
     {
-        $data = $this->globalCrudRepo->all();
+        $data = $this->globalCrudRepo->all(['vehicle', 'driver']);
         return $this->makeResponse(200, 1, null, $data);
     }
 
@@ -46,7 +46,7 @@ class TransactionVehiclePairController extends BaseController
 
     public function show(Request $request, $id)
     {
-        $data = $this->globalCrudRepo->find('transaction_vehicle_pair_code', $id);
+        $data = $this->globalCrudRepo->find('transaction_vehicle_pair_code', $id, ['vehicle', 'driver']);
         return $this->makeResponse(200, 1, null, $data);
     }
 
