@@ -6,7 +6,10 @@ use App\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
 use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
 use App\Models\MsVehicle;
+use App\Models\MsStatusVehicle;
 use App\Models\MwMapping;
+use App\Models\BestDriver;
+use App\Models\RptDriverScoring;
 use Auth;
 use DB;
 
@@ -27,11 +30,10 @@ class MappingController extends BaseController
     public function store(Request $request)
     {
         try {
-
             //get license plate
             $vehicle = MsVehicle::where('imei_obd_number', $request->imei)->first();
             if(empty($vehicle)){
-                throw new \Exception("Error Processing Request. Cannot define license plate");	
+                throw new \Exception("Error Processing Request. Cannot define vehicle");	
             }
 
             $input  = [
@@ -150,7 +152,7 @@ class MappingController extends BaseController
     private function getAddress($param){
         if(!empty($param['latitude']) && !empty($param['longitude'])){
             //Send request and receive json data by address
-            $geocodeFromLatLong = file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?latlng='.trim($param['latitude']).','.trim($param['longitude']).'&sensor=false&key=AIzaSyA-KVJdBjprHg4-NFYozBfQtoyz0grYP20'); 
+            $geocodeFromLatLong = file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?latlng='.trim($param['latitude']).','.trim($param['longitude']).'&sensor=false&key='.API_GMAPS); 
             $output = json_decode($geocodeFromLatLong);
             $status = $output->status;
             //Get address from json data
@@ -165,6 +167,27 @@ class MappingController extends BaseController
         }else{
             return false;   
         }
+    }
+
+    public function bestDriver($param){
+        $data = [
+            'license_plate' => $param['license_plate'],
+            'driver_name'   => $param['driver_name'],
+            'score'         => $param['score']
+        ];
+        $bestDriver = BestDriver::create($data);
+        return $bestDriver;
+    }
+
+    public function driverScoring($param){
+         $data = [
+            'driver_code' => $param['driver_code'],
+            'driver_name' => $param['driver_name'],
+            'alert_type'  => $param['alert_type'],
+            'score'       => $param['score'],
+        ];
+        $driverScoring = RptDriverScoring::create($data);
+        return $driverScoring;
     }
 
     public function show(Request $request, $id)

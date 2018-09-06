@@ -18,7 +18,7 @@ class VehicleController extends BaseController
 
     public function index()
     {
-        $data = $this->globalCrudRepo->all();
+        $data = $this->globalCrudRepo->all(['brand','model']);
         return $this->makeResponse(200, 1, null, $data);
     }
 

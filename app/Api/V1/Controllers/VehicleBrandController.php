@@ -18,7 +18,7 @@ class VehicleBrandController extends BaseController
 
     public function index()
     {
-        $data = $this->globalCrudRepo->all();
+        $data = $this->globalCrudRepo->all(['vehicle']);
         return $this->makeResponse(200, 1, null, $data);
     }
 
@@ -40,7 +40,7 @@ class VehicleBrandController extends BaseController
 
     public function show(Request $request, $id)
     {
-        $data = $this->globalCrudRepo->find('brand_vehicle_code', $id);
+        $data = $this->globalCrudRepo->find('brand_vehicle_code', $id, ['vehicle']);
         return $this->makeResponse(200, 1, null, $data);
     }
 

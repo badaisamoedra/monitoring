@@ -19,7 +19,7 @@ class AlertController extends BaseController
 
     public function index()
     {
-        $data = $this->globalCrudRepo->all();
+        $data = $this->globalCrudRepo->all(['notification']);
         return $this->makeResponse(200, 1, null, $data);
     }
 
@@ -50,7 +50,7 @@ class AlertController extends BaseController
 
     public function show(Request $request, $id)
     {
-        $data = $this->globalCrudRepo->find('alert_code', $id);
+        $data = $this->globalCrudRepo->find('alert_code', $id, ['notification']);
         return $this->makeResponse(200, 1, null, $data);
     }
 

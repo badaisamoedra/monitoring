@@ -11,10 +11,10 @@ class GlobalCrudRepo{
         $this->model = $model;
     }
 
-    public function all($columns = array('*')){
+    public function all($relation = []){
         try {
-            if($columns == array('*')) return $this->model->paginate(MAX_DATA);
-            else return $this->model->select($columns)->paginate(MAX_DATA);
+            if(!empty($relation)) return $this->model->with($relation)->paginate(MAX_DATA);
+            else return $this->model->paginate(MAX_DATA);
         }catch(QueryException $e){
             throw new \Exception($e->getMessage(), 500);
         }
@@ -36,9 +36,10 @@ class GlobalCrudRepo{
         }
     }
 
-    public function find($column, $value){
+    public function find($column, $value, $relation = []){
         try {
-            return $this->model->where($column, $value)->first();
+            if(!empty($relation)) return $this->model->where($column, $value)->with($relation)->first();
+            else return $this->model->where($column, $value)->first();
         }catch(QueryException $e){
             throw new \Exception($e->getMessage(), 500);
         }
@@ -96,14 +97,6 @@ class GlobalCrudRepo{
     public function last(){
         try{
             return $this->model->orderBy('id', 'desc')->first();
-        }catch(QueryException $e){
-            throw new \Exception($e->getMessage(), 500);
-        }
-    }
-
-    public function with(array $with){
-        try {
-            return $this->model->with($with)->get();
         }catch(QueryException $e){
             throw new \Exception($e->getMessage(), 500);
         }
