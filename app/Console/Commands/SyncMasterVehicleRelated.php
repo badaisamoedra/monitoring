@@ -105,9 +105,13 @@ class SyncMasterVehicleRelated extends Command
 					'driver'						=> $driver
 				];
 
-				$data = $this->globalCrudRepo->create($dataPair);
+				// $data = $this->globalCrudRepo->create($dataPair);
 			}
 			
+			$startTime = microtime(true);
+
+			echo "Elapsed time is: ". (microtime(true) - $startTime) ." seconds"."\n";
+			die();
 
 			if(empty($vehiclePair)){
                 throw new \Exception("Error Processing Request. Data is Empty");	
