@@ -48,13 +48,19 @@ class SyncMasterStatusEvent extends Command
 			$getStatusEvent = MsStatusAlert::get();
 
 			foreach($getStatusEvent as $data) {
-				$dataSave = [
-					'status_alert_code'			=> $data->status_alert_code,
-					'status_alert_name'			=> $data->status_alert_name,
-					'status_alert_color_hex'	=> $data->status_alert_color_hex,
-					'status'					=> $data->status
-				];
-				$data = $this->globalCrudRepo->create($dataSave);
+				$checkDataMongo = MongoMasterStatusEvent::where('status_alert_code', $data->status_alert_code)->first();
+				$deleteByObjectId = $this->globalCrudRepo->delete('_id', $checkDataMongo->_id);
+
+				if($deleteByObjectId) {
+					$dataSave = [
+						'status_alert_code'			=> $data->status_alert_code,
+						'status_alert_name'			=> $data->status_alert_name,
+						'status_alert_color_hex'	=> $data->status_alert_color_hex,
+						'status'					=> $data->status
+					];
+					$data = $this->globalCrudRepo->create($dataSave);
+				}
+				
 			}
 			
 

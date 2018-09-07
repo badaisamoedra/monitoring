@@ -51,25 +51,31 @@ class SyncMasterEventRelated extends Command
 
 			foreach ($getEvent as $data) {
 
-				$getNotif = MsNotification::where('notification_code', $data->notification_code)->first();
-				$dataNotif = !empty($getNotif) ? $getNotif->toArray() : NULL;
+				$checkDataMongo = MongoMasterEventRelated::where('alert_code', $data->alert_code)->first();
+				$deleteByObjectId = $this->globalCrudRepo->delete('_id', $checkDataMongo->_id);
 
-				$getPriority = MsStatusAlertPriority::where('alert_priority_code', $data->status_alert_priority_code)->first();
-				$dataPriority = !empty($getPriority) ? $getPriority->toArray() : NULL;
+				if($deleteByObjectId) {
+					$getNotif = MsNotification::where('notification_code', $data->notification_code)->first();
+					$dataNotif = !empty($getNotif) ? $getNotif->toArray() : NULL;
 
-				$dataSave = [
-					'alert_code' 					=> $data->alert_code,
-					'alert_name' 					=> $data->alert_name,
-					'notification_code' 			=> $data->notification_code,
-					'provision_alert_name' 			=> $data->provision_alert_name,
-					'provision_alert_code' 			=> $data->provision_alert_code,
-					'score' 						=> $data->score,
-					'status_alert_priority_code' 	=> $data->status_alert_priority_code,
-					'notif_detail'					=> $dataNotif,
-					'priority_detail'				=> $dataPriority,
-				];
+					$getPriority = MsStatusAlertPriority::where('alert_priority_code', $data->status_alert_priority_code)->first();
+					$dataPriority = !empty($getPriority) ? $getPriority->toArray() : NULL;
 
-				$data = $this->globalCrudRepo->create($dataSave);
+					$dataSave = [
+						'alert_code' 					=> $data->alert_code,
+						'alert_name' 					=> $data->alert_name,
+						'notification_code' 			=> $data->notification_code,
+						'provision_alert_name' 			=> $data->provision_alert_name,
+						'provision_alert_code' 			=> $data->provision_alert_code,
+						'score' 						=> $data->score,
+						'status_alert_priority_code' 	=> $data->status_alert_priority_code,
+						'notif_detail'					=> $dataNotif,
+						'priority_detail'				=> $dataPriority,
+					];
+
+					$data = $this->globalCrudRepo->create($dataSave);
+				}
+
 			}
 
 		} catch(\Exception $e) {
