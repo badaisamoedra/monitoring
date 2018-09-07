@@ -13,7 +13,7 @@ class MsZone extends Model {
 
     public function zone_detail()
     {
-        return $this->hasOne('App\Models\MsZoneDetailCoordinate','zone_code','zone_code');
+        return $this->hasMany('App\Models\MsZoneDetailCoordinate','zone_code','zone_code');
     }
 
 }

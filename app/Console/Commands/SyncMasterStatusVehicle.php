@@ -2,21 +2,20 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-// use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB;
 
 use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
-use App\Models\MongoTrxVehiclePair;
-use App\Models\TransactionVehiclePair;
-use DB;
+use App\Models\MongoMasterStatusVehicle;
+use App\Models\MsStatusVehicle;
 
-class SyncTransactionVehiclePair extends Command
+class SyncMasterStatusVehicle extends Command
 {
 	/**
 	 * The name and signature of the console command.
 	 *
 	 * @var string
 	 */
-	protected $signature = 'trx_vehicle_pair:sync';
+	protected $signature = 'master_status_vehicle:sync';
 
 	/**
 	 * The console command description.
@@ -35,7 +34,7 @@ class SyncTransactionVehiclePair extends Command
 	{
 		parent::__construct();
 		$this->globalCrudRepo = $globalCrudRepo;
-		$this->globalCrudRepo->setModel(new MongoTrxVehiclePair());
+		$this->globalCrudRepo->setModel(new MongoMasterStatusVehicle());
 	}
 
 	/**
@@ -46,17 +45,19 @@ class SyncTransactionVehiclePair extends Command
 	public function handle()
 	{
 		try{
-			$vehiclePair = TransactionVehiclePair::all();
+			$getStatusVehicle = MsStatusVehicle::get();
 
-			if(empty($vehiclePair)){
-                throw new \Exception("Error Processing Request. Data is Empty");	
+			foreach ($getStatusVehicle as $data) {
+				$dataSave = [
+					'status_vehicle_code'		=> $data->status_vehicle_code,
+					'status_vehicle_name'		=> $data->status_vehicle_name,
+					'color_hex'					=> $data->color_hex,
+				];
+				$data = $this->globalCrudRepo->create($dataSave);
 			}
-
 			
-			
-
 		} catch(\Exception $e) {
-            return $this->makeResponse(500, 0, $e->getMessage(), null);
+            return $e->getMessage();
 		}
 		
 		

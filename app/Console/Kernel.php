@@ -13,7 +13,10 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        'App\Console\Commands\SyncTransactionVehiclePair',
+        'App\Console\Commands\SyncMasterVehicleRelated',
+        'App\Console\Commands\SyncMasterEventRelated',
+        'App\Console\Commands\SyncMasterStatusEvent',
+        'App\Console\Commands\SyncMasterStatusVehicle',
     ];
 
     /**
@@ -24,6 +27,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('trx_vehicle_pair:sync')->everyMinute();
+        $schedule->command('master_vehicle_related:sync')->everyMinute();
+        $schedule->command('master_event_related:sync')->everyMinute();
+        $schedule->command('master_status_event:sync')->everyMinute();
+        $schedule->command('master_status_vehicle:sync')->everyMinute();
     }
 }
