@@ -49,9 +49,16 @@ class SyncMasterStatusVehicle extends Command
 
 			foreach ($getStatusVehicle as $data) {
 				$checkDataMongo = MongoMasterStatusVehicle::where('status_vehicle_code', $data->status_vehicle_code)->first();
-				$deleteByObjectId = $this->globalCrudRepo->delete('_id', $checkDataMongo->_id);
 
-				if($deleteByObjectId) {
+				if (empty($checkDataMongo)) {
+					$dataSave = [
+						'status_vehicle_code'		=> $data->status_vehicle_code,
+						'status_vehicle_name'		=> $data->status_vehicle_name,
+						'color_hex'					=> $data->color_hex,
+					];
+					$data = $this->globalCrudRepo->create($dataSave);
+				} else {
+					$deleteByObjectId = $this->globalCrudRepo->delete('_id', $checkDataMongo->_id);
 					$dataSave = [
 						'status_vehicle_code'		=> $data->status_vehicle_code,
 						'status_vehicle_name'		=> $data->status_vehicle_name,
