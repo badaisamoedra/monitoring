@@ -212,7 +212,8 @@ class MappingController extends BaseController
     private function checkZone($vehicle, $mapping, $param){
         $polygon = [];
         $now = Carbon::now();
-        $deviceTime = Carbon::parse($mapping->device_time);
+        // $deviceTime = Carbon::parse($mapping->device_time);
+        $deviceTime = $param['device_time'];
 
         if(isset($vehicle['vehicle']['zone']) && !empty($vehicle['vehicle']['zone'])){
             foreach($vehicle['vehicle']['zone'] as $zone){
