@@ -4,6 +4,7 @@ namespace App\Api\V1\Controllers;
 
 use App\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
+use App\Helpers;
 use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
 use App\Models\MsVehicle;
 use App\Models\MsStatusVehicle;
@@ -17,6 +18,8 @@ use App\Models\MongoMasterEventRelated;
 use Auth;
 use DB;
 use Carbon\Carbon;
+use \ZMQContext;
+use \ZMQ;
 
 class MappingController extends BaseController
 {
@@ -39,13 +42,14 @@ class MappingController extends BaseController
     public function store(Request $request)
     {
         try {
-            //get license plate
+
+            // get license plate
             $vehicle = MongoMasterVehicleRelated::where('vehicle.imei_obd_number', $request->imei)->first();
             if(empty($vehicle)){
                 throw new \Exception("Error Processing Request. Cannot define vehicle");	
             }
 
-            //get detail by imei
+            // get detail by imei
             $mapping = $this->globalCrudRepo->find('imei',$request->imei);
 
             self::$temp = [
@@ -124,13 +128,13 @@ class MappingController extends BaseController
                 'license_plate'            => $vehicle['vehicle']['license_plate'],
                 'fuel_consumed'            => $request->total_odometer / $vehicle['vehicle']['model']['fuel_ratio'], 
             ];
-           
-            //additional field
+            
+            // additional field
             self::getAddress($request->all());
             self::vehicleStatus($request->all());
             self::alertStatus($request->all());
             self::checkZone($vehicle, $mapping, $request->all());
-
+           
             // if data empty then do insert, if not empty do update
             if(empty($mapping)){
                 //insert
@@ -139,6 +143,10 @@ class MappingController extends BaseController
                 //update
                 $data = $this->globalCrudRepo->updateObject($mapping->id, self::$temp);
             }
+
+            // send data to client that subscribe
+            $pushData = ['topic' => 'dashboard', 'data' => Helpers::dashboardFormat()];
+            Helpers::sendToClient($pushData);
 
             return $this->makeResponse(200, 1, null, $data);
         } catch(\Exception $e) {
@@ -186,12 +194,10 @@ class MappingController extends BaseController
     private function getAddress($param){
         if(!empty($param['latitude']) && !empty($param['longitude'])){
             //Send request and receive json data by address
-            $geocodeFromLatLong = file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?latlng='.trim($param['latitude']).','.trim($param['longitude']).'&sensor=false&key='.env('API_GMAPS')); 
+            $geocodeFromLatLong = file_get_contents('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='.trim($param['latitude']).'&lon='.trim($param['longitude']).'&limit=1&email=badai.samoedra@gmail.com'); 
             $output = json_decode($geocodeFromLatLong);
-            $status = $output->status;
             //Get address from json data
-            $address = ($status=="OK")?$output->results[1]->formatted_address:'';
-
+            $address = !empty($output) ? $output->display_name:'';
             //Return address of the given latitude and longitude
             if(!empty($address))
                self::$temp['last_location'] = $address;
@@ -222,7 +228,7 @@ class MappingController extends BaseController
          self::$temp['duration_out_zone'] = null;
        }else{
          self::$temp['is_out_zone'] = TRUE;
-         self::$temp['duration_out_zone'] = $now->diffInHours($deviceTime);
+         self::$temp['duration_out_zone'] = $now->diffInMinutes($deviceTime);
        }
     }
 
