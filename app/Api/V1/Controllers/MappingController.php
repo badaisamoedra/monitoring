@@ -51,7 +51,7 @@ class MappingController extends BaseController
 
             // get detail by imei
             $mapping = $this->globalCrudRepo->find('imei',$request->imei);
-
+            
             self::$temp = [
                 'device_id'                => $request->device_id,
                 'imei'                     => $request->imei,
