@@ -103,9 +103,6 @@ class SyncMasterVehicleRelated extends Command
 						'start_date_pair'				=> $data->start_date_pair,
 						'end_date_pair'					=> $data->end_date_pair,
 						'status'						=> $data->status,
-						'created_at'					=> $data->created_at,
-						'updated_at'					=> $data->updated_at,
-						'deleted_at'					=> $data->deleted_at,
 						'vehicle'						=> $vehicle,
 						'driver'						=> $driver
 					];
