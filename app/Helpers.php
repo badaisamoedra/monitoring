@@ -35,7 +35,7 @@ Class Helpers{
     }
 
     public static function sendToClient($pushData){
-        $context = new \ZMQContext();
+        $context = new ZMQContext();
         $socket  = $context->getSocket(ZMQ::SOCKET_PUSH, 'my pusher');
         $socket->connect("tcp://localhost:".env('ZMQ_TCP_PORT'));
         $socket->send(json_encode($pushData));
