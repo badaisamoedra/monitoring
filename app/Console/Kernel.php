@@ -17,6 +17,7 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\SyncMasterEventRelated',
         'App\Console\Commands\SyncMasterStatusEvent',
         'App\Console\Commands\SyncMasterStatusVehicle',
+        'App\Console\Commands\SyncIntegration',
     ];
 
     /**
@@ -27,9 +28,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('master_vehicle_related:sync')->hourlyAt(180);
+        $schedule->command('master_vehicle_related:sync')->hourly();
         $schedule->command('master_event_related:sync')->everyThirtyMinutes();
         $schedule->command('master_status_event:sync')->everyThirtyMinutes();
         $schedule->command('master_status_vehicle:sync')->everyThirtyMinutes();
+        $schedule->command('log_integration:sync')->cron('0 */2 * * *'); // every 2 hours
     }
 }
