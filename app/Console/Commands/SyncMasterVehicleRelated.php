@@ -108,9 +108,8 @@ class SyncMasterVehicleRelated extends Command
 					];
 
 					$data = $this->globalCrudRepo->create($dataPair);
-				} 
-				
-				if (!empty($checkDataMongo)) {
+					
+				} else {
 
 					$deleteByObjectId = $this->globalCrudRepo->delete('_id', $checkDataMongo->_id);
 					$vehicleBrandModel = MsVehicle::with(['brand','model'])->where('vehicle_code', $data->vehicle->vehicle_code)->first();
@@ -183,7 +182,7 @@ class SyncMasterVehicleRelated extends Command
 				'file_function' => 'SyncMasterVehicleRelated',
 				'Message' => $e->getMessage()
 			];
-			$logs = $this->globalCrudRepoLogs->create($saveLogs);
+			$logs = MongoLogsSync::create($saveLogs);
             return $logs;
 		}
 		

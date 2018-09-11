@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
 use App\Models\MsVehicle;
 use Auth;
+use App\Helpers;
 
 class VehicleController extends BaseController
 {
@@ -91,6 +92,10 @@ class VehicleController extends BaseController
         ]);
         $input = $request->except(['token']);
         $update = $this->globalCrudRepo->update('vehicle_code', $id, $input);
+
+        // Update Sync Vehicle
+        Helpers::updateToSync(null, $id);
+
         return $this->makeResponse(200, 1, null, $update);
     }
 

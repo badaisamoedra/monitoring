@@ -4,8 +4,11 @@ namespace App;
 use App\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
 use App\Models\MwMapping;
+use App\Models\TransactionVehiclePair;
+use App\Models\MsVehicle;
 use \ZMQContext;
 use \ZMQ;
+use Carbon\Carbon;
 
 Class Helpers{
 
@@ -41,5 +44,19 @@ Class Helpers{
         $socket->send(json_encode($pushData));
     }
 
+    public static function updateToSync($model=null, $id){
+        // This Logic For update Date in Vehicle Pair
+        if (empty($model)) {
+            $now = Carbon::now()->toDateTimeString();
+            $updateVehiclePair = TransactionVehiclePair::where('vehicle_code', $id)->update(['updated_at' => $now]);
+        }
+
+        if ($model == 'zone') {
+            $data = MsVehicle::where('area_code', $id)->first();
+            print_r($data);die();
+            $now = Carbon::now()->toDateTimeString();
+            $updateVehiclePair = TransactionVehiclePair::where('vehicle_code', $id)->update(['updated_at' => $now]);
+        }
+    }
    
 }
