@@ -6,9 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\MwMapping;
 use App\Models\TransactionVehiclePair;
 use App\Models\MsVehicle;
+use App\Models\BestDriver;
+use Carbon\Carbon;
 use \ZMQContext;
 use \ZMQ;
-use Carbon\Carbon;
 
 Class Helpers{
 
@@ -17,30 +18,35 @@ Class Helpers{
             'showVehicleStatus'   => [],
             'showVehicleLocation' => [],
             'showUtilization'     => [],
-            'showAssetUsage'      => []
+            'showAssetUsage'      => [],
+            'showBestDriver'      => []
         ];
-        $dataMapping = MwMapping::all();
+        $dataMapping = MwMapping::take(10)->get();
 
-        // showVehicleLocation format
-        if(!empty($dataMapping)) foreach($dataMapping as $mapping){
-            $result['showVehicleLocation'][] = ['license_plate' => $mapping->license_plate,'location' => $mapping->last_location]; 
-        }
+        // $result['showVehicleStatus'] =  MwMapping::get();
+
+        // showVehicleLocation format (limit 10)
+        $result['showVehicleLocation'] = MwMapping::select('license_plate','last_location')->take(10)->get()->toArray();
 
         // showUtilization format
         $result['showUtilization']['total_moving_time'] = MwMapping::where('vehicle_status','Moving')->count();
         $result['showUtilization']['total_idle_time']   = MwMapping::where('vehicle_status','!=', 'Moving')->count();
         
         // showAssetUsage format
-        $result['showAssetUsage']['total_distance']  = MwMapping::where('vehicle_status','Moving')->count();
-        $result['showAssetUsage']['fuel_concumed']   = MwMapping::where('vehicle_status','!=', 'Moving')->count();
-    
+        $result['showAssetUsage']['total_distance']  = MwMapping::sum('total_odometer');
+        $result['showAssetUsage']['fuel_concumed']   = MwMapping::sum('fuel_consumed');
+
+        // showBestDriver format
+        $result['showBestDriver'] = BestDriver::where('created_at', '>=', Carbon::today())
+                                                ->orderBy('score', 'desc')
+                                                ->take(10)->get()->toArray();
         return $result;
     }
 
     public static function sendToClient($pushData){
         $context = new ZMQContext();
         $socket  = $context->getSocket(ZMQ::SOCKET_PUSH, 'my pusher');
-        $socket->connect("tcp://localhost:".env('ZMQ_TCP_PORT'));
+        $socket->connect("tcp://".env('ZMQ_HOST').":".env('ZMQ_TCP_PORT'));
         $socket->send(json_encode($pushData));
     }
 

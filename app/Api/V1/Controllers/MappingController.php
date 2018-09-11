@@ -41,6 +41,7 @@ class MappingController extends BaseController
 
     public function store(Request $request)
     {
+        // print_r(Helpers::dashboardFormat());die();
         try {
 
             // get license plate
@@ -134,6 +135,8 @@ class MappingController extends BaseController
             self::vehicleStatus($request->all());
             self::alertStatus($request->all());
             self::checkZone($vehicle, $mapping, $request->all());
+            // self::bestDriver($vehicle, $request->all());
+            // self::driverScoring(self::$temp);
            
             // if data empty then do insert, if not empty do update
             if(empty($mapping)){
@@ -179,7 +182,7 @@ class MappingController extends BaseController
     }
 
     private function alertStatus($param){
-        $mongoMsEventRelated = MongoMasterEventRelated::where('alert_name', $param['event_type'])->first();
+        $mongoMsEventRelated = MongoMasterEventRelated::where('provision_alert_name', $param['event_type'])->first();
         if(!empty($mongoMsEventRelated)){ 
             self::$temp['alert_status']   = $mongoMsEventRelated->alert_name;
             self::$temp['alert_priority'] = $mongoMsEventRelated->priority_detail['alert_priority_name'];
@@ -212,8 +215,7 @@ class MappingController extends BaseController
     private function checkZone($vehicle, $mapping, $param){
         $polygon = [];
         $now = Carbon::now();
-        // $deviceTime = Carbon::parse($mapping->device_time);
-        $deviceTime = $param['device_time'];
+        $deviceTime = Carbon::parse($param['device_time']);
 
         if(isset($vehicle['vehicle']['zone']) && !empty($vehicle['vehicle']['zone'])){
             foreach($vehicle['vehicle']['zone'] as $zone){
@@ -260,13 +262,31 @@ class MappingController extends BaseController
         return $oddNodes;
     }
 
-    public function bestDriver($param){
+    public function bestDriver($vehicle, $param){
+        $mongoMsEventRelated = MongoMasterEventRelated::where('provision_alert_name', $param['event_type'])->first();
+
+        if(empty($mongoMsEventRelated)) $score = 0;
+        else $score = $mongoMsEventRelated->score;
+         
+        $bestDriver = new BestDriver;
+        $check = $bestDriver->where('driver_name', $vehicle['driver']['name'])->first();
+        $oldScore = $check->score ?  $check->score : 0;
+
         $data = [
-            'license_plate' => $param['license_plate'],
-            'driver_name'   => $param['driver_name'],
-            'score'         => $param['score']
+            'license_plate' => self::$temp['license_plate'],
+            'driver_name'   => $vehicle['driver']['name'],
+            'score'         => $score + $oldScore
         ];
-        $bestDriver = BestDriver::create($data);
+
+        if(!empty($check)){
+            // update
+            $bestDriver =  $bestDriver->BestDriver::update('driver_name', $vehicle['driver']['name'], $data);
+        }else{
+            // insert
+            $bestDriver = $bestDriver->create($data);
+        }
+       
+        
         return $bestDriver;
     }
 
