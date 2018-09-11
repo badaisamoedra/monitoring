@@ -41,7 +41,6 @@ class MappingController extends BaseController
 
     public function store(Request $request)
     {
-        // print_r(Helpers::dashboardFormat());die();
         try {
 
             // get license plate
@@ -135,8 +134,7 @@ class MappingController extends BaseController
             self::vehicleStatus($request->all());
             self::alertStatus($request->all());
             self::checkZone($vehicle, $mapping, $request->all());
-            // self::bestDriver($vehicle, $request->all());
-            // self::driverScoring(self::$temp);
+            self::bestDriver($vehicle, $request->all());
            
             // if data empty then do insert, if not empty do update
             if(empty($mapping)){
@@ -270,7 +268,7 @@ class MappingController extends BaseController
          
         $bestDriver = new BestDriver;
         $check = $bestDriver->where('driver_name', $vehicle['driver']['name'])->first();
-        $oldScore = $check->score ?  $check->score : 0;
+        $oldScore = isset($check->score) ?  $check->score : 0;
 
         $data = [
             'license_plate' => self::$temp['license_plate'],
@@ -280,22 +278,27 @@ class MappingController extends BaseController
 
         if(!empty($check)){
             // update
-            $bestDriver =  $bestDriver->BestDriver::update('driver_name', $vehicle['driver']['name'], $data);
+            foreach($data as $dt => $val){
+                $check->{$dt} = $val;
+            }
+            $bestDriver = $check->save();
         }else{
             // insert
             $bestDriver = $bestDriver->create($data);
         }
        
+        //insert to rpt_driver_scoring
+        self::driverScoring($vehicle, $data);
         
         return $bestDriver;
     }
 
-    public function driverScoring($param){
+    public function driverScoring($vehicle, $data){
          $data = [
-            'driver_code' => $param['driver_code'],
-            'driver_name' => $param['driver_name'],
-            'alert_type'  => $param['alert_type'],
-            'score'       => $param['score'],
+            'driver_code'  => $vehicle['driver']['driver_code'],
+            'driver_name'  => $vehicle['driver']['name'],
+            'alert_status' => self::$temp['alert_status'],
+            'score'        => $data['score'],
         ];
         $driverScoring = RptDriverScoring::create($data);
         return $driverScoring;
