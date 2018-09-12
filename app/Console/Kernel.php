@@ -28,10 +28,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('master_vehicle_related:sync')->hourly();
-        $schedule->command('master_event_related:sync')->everyThirtyMinutes();
-        $schedule->command('master_status_event:sync')->everyThirtyMinutes();
-        $schedule->command('master_status_vehicle:sync')->everyThirtyMinutes();
+        $schedule->command('master_vehicle_related:sync')->everyFifteenMinutes();
+        $schedule->command('master_event_related:sync')->everyFiveMinutes();
+        $schedule->command('master_status_event:sync')->everyFiveMinutes();
+        $schedule->command('master_status_vehicle:sync')->everyFiveMinutes();
         $schedule->command('log_integration:sync')->cron('0 */2 * * *'); // every 2 hours
     }
 }
