@@ -23,8 +23,120 @@ Class Helpers{
         ];
         $dataMapping = MwMapping::take(10)->get();
 
-        // $result['showVehicleStatus'] =  MwMapping::get();
+        // showVehicleStatus format
+        $result['showVehicleStatus'] = MwMapping::raw(function($collection)
+        {
+            return $collection->aggregate([
+                [
+                    '$project' => array(
+                        '_id' => 0,
+                        'vehicle_status' => '$vehicle_status',
+                        'vehicle_status_color' => '$vehicle_status_color'
+                    )
+                ],
+                [
+                    '$group' => array(
+                        '_id' => [
+                                'vehicle_status' => '$vehicle_status',
+                                'vehicle_status_color' => '$vehicle_status_color',
+                            ],
+                        'total' => [
+                            '$sum' => 1
+                        ]
+                    )
+                ],
+                [
+                    '$group' => array(
+                        '_id' => 0,
+                        'types' => [
+                            '$push' => [
+                                'vehicle_status' => '$_id.vehicle_status',
+                                'vehicle_status_color' => '$_id.vehicle_status_color',
+                                'total' => '$total'
+                            ]
+                        ],
+                        "grandTotal" => [
+                            '$sum' => '$total'
+                        ]
+                    )
+                ],
+                [
+                    '$unwind' => '$types'
+                ],
+                [
+                    '$project' => [
+                        '_id' => 0,
+                        'vehicle_status' => '$types.vehicle_status',
+                        'vehicle_status_color' => '$types.vehicle_status_color',
+                        'percentage' => [
+                            '$multiply' => [[
+                                '$divide' => [100, '$grandTotal']
+                            ], '$types.total']
+                        ]
+                    ]
+                ]
 
+
+            ]);
+        })->toArray();
+
+         // showAlertSummary format
+         $result['showAlertSummary'] = MwMapping::raw(function($collection)
+        {
+            return $collection->aggregate([
+                [
+                    '$project' => array(
+                        '_id' => 0,
+                        'alert_priority' => '$alert_priority',
+                        'alert_priority_color' => '$alert_priority_color'
+                    )
+                ],
+                [
+                    '$group' => array(
+                        '_id' => [
+                                'alert_priority' => '$alert_priority',
+                                'alert_priority_color' => '$alert_priority_color',
+                            ],
+                        'total' => [
+                            '$sum' => 1
+                        ]
+                    )
+                ],
+                [
+                    '$group' => array(
+                        '_id' => 0,
+                        'types' => [
+                            '$push' => [
+                                'alert_priority' => '$_id.alert_priority',
+                                'alert_priority_color' => '$_id.alert_priority_color',
+                                'total' => '$total'
+                            ]
+                        ],
+                        "grandTotal" => [
+                            '$sum' => '$total'
+                        ]
+                    )
+                ],
+                [
+                    '$unwind' => '$types'
+                ],
+                [
+                    '$project' => [
+                        '_id' => 0,
+                        'alert_priority' => '$types.alert_priority',
+                        'alert_priority_color' => '$types.alert_priority_color',
+                        'percentage' => [
+                            '$multiply' => [[
+                                '$divide' => [100, '$grandTotal']
+                            ], '$types.total']
+                        ]
+                    ]
+                ]
+
+
+            ]);
+        })->toArray();
+       
         // showVehicleLocation format (limit 10)
         $result['showVehicleLocation'] = MwMapping::select('license_plate','last_location')->take(10)->get()->toArray();
 
