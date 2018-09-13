@@ -7,6 +7,7 @@ use App\Models\MwMapping;
 use App\Models\TransactionVehiclePair;
 use App\Models\MongoMasterStatusVehicle;
 use App\Models\MongoMasterStatusEvent;
+use App\Models\MongoMasterEventRelated;
 use App\Models\MsVehicle;
 use App\Models\BestDriver;
 use Carbon\Carbon;
@@ -104,6 +105,67 @@ Class Helpers{
         $result['showVehicleStatus'] = $tempVehicleStatus;
 
         // showAlertSummary format
+        // get alert status event
+        // $showAlertStatus = MwMapping::raw(function($collection)
+        // {
+        //     return $collection->aggregate([
+        //         [
+        //             '$project' => array(
+        //                 '_id' => 0,
+        //                 'alert_status' => '$alert_status',
+        //                 'status_alert_color_hex' => '$status_alert_color_hex'
+        //             )
+        //         ],
+        //         [
+        //             '$group' => array(
+        //                 '_id' => [
+        //                         'alert_status' => '$alert_status',
+        //                         'status_alert_color_hex' => '$status_alert_color_hex',
+        //                     ],
+        //                 'total' => [
+        //                     '$sum' => 1
+        //                 ]
+        //             )
+        //         ],
+        //         [
+        //             '$group' => array(
+        //                 '_id' => 0,
+        //                 'types' => [
+        //                     '$push' => [
+        //                         'alert_status' => '$_id.alert_status',
+        //                         'status_alert_color_hex' => '$_id.status_alert_color_hex',
+        //                         'total' => '$total'
+        //                     ]
+        //                 ],
+        //                 "grandTotal" => [
+        //                     '$sum' => '$total'
+        //                 ]
+        //             )
+        //         ],
+        //         [
+        //             '$unwind' => '$types'
+        //         ],
+        //         [
+        //             '$project' => [
+        //                 '_id' => 0,
+        //                 'alert_status' => '$types.alert_status',
+        //                 'status_alert_color_hex' => '$types.status_alert_color_hex',
+        //                 'percentage' => [
+        //                     '$multiply' => [[
+        //                         '$divide' => [100, '$grandTotal']
+        //                     ], '$types.total']
+        //                 ]
+        //             ]
+        //         ]
+
+
+        //     ]);
+        // })->toArray();
+        // print_r($showAlertStatus);die();
+        $masterStatusEvent = MongoMasterStatusEvent::get()->toArray();
+
+
+        //  get alert priority
          $showAlertPriority = MwMapping::raw(function($collection)
         {
             return $collection->aggregate([
