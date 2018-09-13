@@ -42,6 +42,7 @@ class MappingController extends BaseController
     public function store(Request $request)
     {
         try {
+            // print_r(Helpers::dashboardFormat());die();
             // get license plate
             $vehicle = MongoMasterVehicleRelated::where('vehicle.imei_obd_number', $request->imei)->first();
             if(empty($vehicle)){

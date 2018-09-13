@@ -84,7 +84,7 @@ Class Helpers{
             ]);
         })->toArray();
        
-        $n = 1;
+        $n = 0;
         $tempVehicleStatus = [];
         $masterVehicleStatus = MongoMasterStatusVehicle::all()->toArray();
         if(!empty($masterVehicleStatus)){ 
@@ -161,9 +161,21 @@ Class Helpers{
 
         //     ]);
         // })->toArray();
-        // print_r($showAlertStatus);die();
-        $masterStatusEvent = MongoMasterStatusEvent::get()->toArray();
-
+        
+        // $n = 0;
+        // $tempAlertStatus = [];
+        // $masterStatusEvent = MongoMasterStatusEvent::get()->toArray();
+        // if(!empty($masterStatusEvent)) foreach($masterStatusEvent as $masterStatus){
+        //     $tempAlertStatus[$n]['alert_status'] = $masterStatus['status_alert_code'];
+        //     $tempAlertStatus[$n]['status_alert_color_hex']= $masterStatus['status_alert_color_hex'];
+        //     $tempAlertStatus[$n]['percentage'] = null;
+        //     foreach($showAlertStatus as $status){
+        //         if($status['alert_status'] == $masterStatus['status_alert_name']){
+        //             $tempAlertStatus[$n]['percentage'] = $status['percentage'];
+        //         }
+        //     }
+        //     $n++;
+        // }
 
         //  get alert priority
          $showAlertPriority = MwMapping::raw(function($collection)
@@ -222,7 +234,7 @@ Class Helpers{
             ]);
         })->toArray();
         
-        $n=1;
+        $n=0;
         $tempAlertPriority = [];
         $masterAlertPriority = self::masterAlertPriority();
         if(!empty($masterAlertPriority)) foreach($masterAlertPriority as $priority){
