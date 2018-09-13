@@ -106,76 +106,76 @@ Class Helpers{
 
         // showAlertSummary format
         // get alert status event
-        // $showAlertStatus = MwMapping::raw(function($collection)
-        // {
-        //     return $collection->aggregate([
-        //         [
-        //             '$project' => array(
-        //                 '_id' => 0,
-        //                 'alert_status' => '$alert_status',
-        //                 'status_alert_color_hex' => '$status_alert_color_hex'
-        //             )
-        //         ],
-        //         [
-        //             '$group' => array(
-        //                 '_id' => [
-        //                         'alert_status' => '$alert_status',
-        //                         'status_alert_color_hex' => '$status_alert_color_hex',
-        //                     ],
-        //                 'total' => [
-        //                     '$sum' => 1
-        //                 ]
-        //             )
-        //         ],
-        //         [
-        //             '$group' => array(
-        //                 '_id' => 0,
-        //                 'types' => [
-        //                     '$push' => [
-        //                         'alert_status' => '$_id.alert_status',
-        //                         'status_alert_color_hex' => '$_id.status_alert_color_hex',
-        //                         'total' => '$total'
-        //                     ]
-        //                 ],
-        //                 "grandTotal" => [
-        //                     '$sum' => '$total'
-        //                 ]
-        //             )
-        //         ],
-        //         [
-        //             '$unwind' => '$types'
-        //         ],
-        //         [
-        //             '$project' => [
-        //                 '_id' => 0,
-        //                 'alert_status' => '$types.alert_status',
-        //                 'status_alert_color_hex' => '$types.status_alert_color_hex',
-        //                 'percentage' => [
-        //                     '$multiply' => [[
-        //                         '$divide' => [100, '$grandTotal']
-        //                     ], '$types.total']
-        //                 ]
-        //             ]
-        //         ]
+        $showAlertStatus = MwMapping::raw(function($collection)
+        {
+            return $collection->aggregate([
+                [
+                    '$project' => array(
+                        '_id' => 0,
+                        'alert_status' => '$alert_status',
+                        'status_alert_color_hex' => '$status_alert_color_hex'
+                    )
+                ],
+                [
+                    '$group' => array(
+                        '_id' => [
+                                'alert_status' => '$alert_status',
+                                'status_alert_color_hex' => '$status_alert_color_hex',
+                            ],
+                        'total' => [
+                            '$sum' => 1
+                        ]
+                    )
+                ],
+                [
+                    '$group' => array(
+                        '_id' => 0,
+                        'types' => [
+                            '$push' => [
+                                'alert_status' => '$_id.alert_status',
+                                'status_alert_color_hex' => '$_id.status_alert_color_hex',
+                                'total' => '$total'
+                            ]
+                        ],
+                        "grandTotal" => [
+                            '$sum' => '$total'
+                        ]
+                    )
+                ],
+                [
+                    '$unwind' => '$types'
+                ],
+                [
+                    '$project' => [
+                        '_id' => 0,
+                        'alert_status' => '$types.alert_status',
+                        'status_alert_color_hex' => '$types.status_alert_color_hex',
+                        'percentage' => [
+                            '$multiply' => [[
+                                '$divide' => [100, '$grandTotal']
+                            ], '$types.total']
+                        ]
+                    ]
+                ]
 
 
-        //     ]);
-        // })->toArray();
+            ]);
+        })->toArray();
         
-        // $n = 0;
-        // $tempAlertStatus = [];
-        // $masterStatusEvent = MongoMasterStatusEvent::get()->toArray();
-        // if(!empty($masterStatusEvent)) foreach($masterStatusEvent as $masterStatus){
-        //     $tempAlertStatus[$n]['alert_status'] = $masterStatus['status_alert_code'];
-        //     $tempAlertStatus[$n]['status_alert_color_hex']= $masterStatus['status_alert_color_hex'];
-        //     $tempAlertStatus[$n]['percentage'] = null;
-        //     foreach($showAlertStatus as $status){
-        //         if($status['alert_status'] == $masterStatus['status_alert_name']){
-        //             $tempAlertStatus[$n]['percentage'] = $status['percentage'];
-        //         }
-        //     }
-        //     $n++;
-        // }
+        $n = 0;
+        $tempAlertStatus = [];
+        $masterStatusEvent = MongoMasterStatusEvent::get()->toArray();
+        if(!empty($masterStatusEvent)) foreach($masterStatusEvent as $masterStatus){
+            $tempAlertStatus[$n]['alert_status'] = $masterStatus['status_alert_name'];
+            $tempAlertStatus[$n]['status_alert_color_hex']= $masterStatus['status_alert_color_hex'];
+            $tempAlertStatus[$n]['percentage'] = null;
+            foreach($showAlertStatus as $status){
+                if($status['alert_status'] == $masterStatus['status_alert_name']){
+                    $tempAlertStatus[$n]['percentage'] = $status['percentage'];
+                }
+            }
+            $n++;
+        }
 
         //  get alert priority
          $showAlertPriority = MwMapping::raw(function($collection)
@@ -253,7 +253,7 @@ Class Helpers{
             $n++;
         }
 
-        $result['showAlertSummary'] = $tempAlertPriority;
+        $result['showAlertSummary'] = array_merge($tempAlertPriority, $tempAlertStatus);
 
         // showVehicleLocation format (limit 10)
         $result['showVehicleLocation'] = MwMapping::select('license_plate','last_location')->take(10)->get()->toArray();
