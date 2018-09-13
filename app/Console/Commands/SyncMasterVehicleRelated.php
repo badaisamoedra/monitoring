@@ -8,6 +8,7 @@ use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
 use App\Models\MongoMasterVehicleRelated;
 use App\Models\MongoLogsSync;
 use App\Models\TransactionVehiclePair;
+use App\Models\MongoLogsIntegration;
 use App\Models\MsVehicle;
 use App\Models\MsZone;
 
@@ -48,8 +49,9 @@ class SyncMasterVehicleRelated extends Command
 	public function handle()
 	{
 		try{
+			$start = microtime(true);
 			$vehiclePair = TransactionVehiclePair::with(['vehicle', 'driver'])->get();
-
+			
 			foreach ($vehiclePair as $data) {
 				$checkDataMongo = MongoMasterVehicleRelated::where('vehicle_code', $data->vehicle->vehicle_code)->first();
 
@@ -169,9 +171,12 @@ class SyncMasterVehicleRelated extends Command
 				}
 			}
 
+			$time_elapsed_secs = microtime(true) - $start;
+
 			$saveLogs = [
 				'status' => 'SUCCESS',
 				'file_function' => 'SyncMasterVehicleRelated',
+				'execution_time' => $time_elapsed_secs,
 				'Message' => ''
 			];
 			$logs = MongoLogsSync::create($saveLogs);
@@ -180,6 +185,7 @@ class SyncMasterVehicleRelated extends Command
 			$saveLogs = [
 				'status' => 'ERROR',
 				'file_function' => 'SyncMasterVehicleRelated',
+				'execution_time' => '0',
 				'Message' => $e->getMessage()
 			];
 			$logs = MongoLogsSync::create($saveLogs);
