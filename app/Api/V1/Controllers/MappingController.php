@@ -182,10 +182,12 @@ class MappingController extends BaseController
         $mongoMsEventRelated = MongoMasterEventRelated::where('provision_alert_name', $param['event_type'])->first();
         if(!empty($mongoMsEventRelated)){ 
             self::$temp['alert_status']   = $mongoMsEventRelated->alert_name;
+            self::$temp['status_alert_color_hex']   = $mongoMsEventRelated->status_alert_color_hex;
             self::$temp['alert_priority'] = $mongoMsEventRelated->priority_detail['alert_priority_name'];
             self::$temp['alert_priority_color'] = $mongoMsEventRelated->priority_detail['alert_priority_color_hex'];
         }else{ 
             self::$temp['alert_status'] = null;
+            self::$temp['status_alert_color_hex'] = null;
             self::$temp['alert_priority'] = null;
             self::$temp['alert_priority_color'] = null;
         }

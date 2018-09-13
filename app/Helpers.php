@@ -159,29 +159,27 @@ Class Helpers{
 
             ]);
         })->toArray();
-    
+        
         $n=1;
         $tempAlertPriority = [];
-        $masterAlertPriority = MongoMasterStatusEvent::all()->toArray();
-        if(!empty($masterAlertPriority)){
-            foreach($masterAlertPriority as $priority){
-                $tempAlertPriority[$n]['alert_priority'] = $priority['status_alert_name'];
-                $tempAlertPriority[$n]['alert_priority_color']= $priority['status_alert_color_hex'];
-                $tempAlertPriority[$n]['percentage'] = null;
-                if(!empty($showAlertPriority)){
+        $masterAlertPriority = self::masterAlertPriority();
+        if(!empty($masterAlertPriority)) foreach($masterAlertPriority as $priority){
+            $tempAlertPriority[$n]['alert_priority'] = $priority['alert_priority_name'];
+            $tempAlertPriority[$n]['alert_priority_color']= $priority['alert_priority_color_hex'];
+            $tempAlertPriority[$n]['percentage'] = null;
+            if(!empty($showAlertPriority)){
+                
+                foreach($showAlertPriority as $status){
                     
-                    foreach($showAlertPriority as $status){
-                        
-                        if($status['alert_priority'] == $priority['status_alert_name']){
-                            echo 'masuk';die();
-                            $tempAlertPriority[$n]['percentage'] = $status['percentage'].'%';
-                        }
+                    if($status['alert_priority'] == $priority['alert_priority_name']){
+                        $tempAlertPriority[$n]['percentage'] = $status['percentage'].'%';
                     }
                 }
-            $n++;
             }
+            $n++;
         }
-        $result['showAlertPriority'] = $tempAlertPriority;
+
+        $result['showAlertSummary'] = $tempAlertPriority;
 
         // showVehicleLocation format (limit 10)
         $result['showVehicleLocation'] = MwMapping::select('license_plate','last_location')->take(10)->get()->toArray();
@@ -199,9 +197,18 @@ Class Helpers{
                                                 ->orderBy('score', 'desc')
                                                 ->take(10)->get()->toArray();
 
+        // showGeofence format                                           
         $result['showGeofence'] = MwMapping::select('license_plate', 'duration_out_zone')->where('is_out_zone', true)->take(10)->get()->toArray();
 
         return $result;
+    }
+
+    public static function masterAlertPriority(){
+        return [
+            ['alert_priority_name' => 'Critical' , 'alert_priority_color_hex' => '#ff0033'],
+            ['alert_priority_name' => 'Warning' , 'alert_priority_color_hex' => '#ffcc33'],
+            ['alert_priority_name' => 'Information' , 'alert_priority_color_hex' => '#0033cc'],
+        ];
     }
 
     public static function sendToClient($pushData){
