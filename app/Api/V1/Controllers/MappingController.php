@@ -33,16 +33,18 @@ class MappingController extends BaseController
         $this->globalCrudRepo->setModel(new MwMapping());
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = $this->globalCrudRepo->all();
+        if($request->has('search'))
+            $data = MwMapping::where('license_plate', 'like', "%$request->search%")->get();
+        else
+            $data = MwMapping::all();
         return $this->makeResponse(200, 1, null, $data);
     }
 
     public function store(Request $request)
     {
         try {
-            // print_r(Helpers::dashboardFormat());die();
             // get license plate
             $vehicle = MongoMasterVehicleRelated::where('vehicle.imei_obd_number', $request->imei)->first();
             if(empty($vehicle)){
@@ -324,4 +326,38 @@ class MappingController extends BaseController
         $delete = $this->globalCrudRepo->deleteObject($id);
         return $this->makeResponse(200, 1, null, $delete);
     }
+
+    public function getTotalVehicleStatus(){
+        $data = MwMapping::raw(function($collection)
+        {
+            return $collection->aggregate([
+                [
+                    '$group' => array(
+                        '_id' =>  '$vehicle_status',
+                        'total' => [
+                            '$sum' => 1
+                        ]
+                    )
+                ]
+
+            ]);
+        })->toArray();
+
+        $n = 0;
+        $result = [];
+        $masterStatusVehicle = MongoMasterStatusVehicle::get()->toArray();
+        if(!empty($masterStatusVehicle)) foreach($masterStatusVehicle as $msStatus){
+            $result[$n]['statusVehicle'] = $msStatus['status_vehicle_name'];
+            $result[$n]['total'] = 0;
+            foreach($data as $dt){
+                if($dt['_id'] == $msStatus['status_vehicle_name']){
+                    $result[$n]['total'] = $dt['total'];
+                }
+            }
+            $n++;
+        }
+        
+        return $this->makeResponse(200, 1, null, $result);
+    }
+    
 }
