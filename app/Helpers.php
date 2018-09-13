@@ -19,7 +19,8 @@ Class Helpers{
             'showVehicleLocation' => [],
             'showUtilization'     => [],
             'showAssetUsage'      => [],
-            'showBestDriver'      => []
+            'showBestDriver'      => [],
+            'showGeofence'        => []
         ];
         $dataMapping = MwMapping::take(10)->get();
 
@@ -152,6 +153,9 @@ Class Helpers{
         $result['showBestDriver'] = BestDriver::where('created_at', '>=', Carbon::today())
                                                 ->orderBy('score', 'desc')
                                                 ->take(10)->get()->toArray();
+
+        $result['showGeofence'] = MwMapping::select('license_plate', 'duration_out_zone')->where('is_out_zone', true)->take(10)->get()->toArray();
+
         return $result;
     }
 
