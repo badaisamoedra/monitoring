@@ -5,6 +5,8 @@ use App\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
 use App\Models\MwMapping;
 use App\Models\TransactionVehiclePair;
+use App\Models\MongoMasterStatusVehicle;
+use App\Models\MongoMasterStatusEvent;
 use App\Models\MsVehicle;
 use App\Models\BestDriver;
 use Carbon\Carbon;
@@ -24,7 +26,7 @@ Class Helpers{
         $dataMapping = MwMapping::take(10)->get();
 
         // showVehicleStatus format
-        $result['showVehicleStatus'] = MwMapping::raw(function($collection)
+        $showVehicleStatus = MwMapping::raw(function($collection)
         {
             return $collection->aggregate([
                 [
@@ -64,7 +66,7 @@ Class Helpers{
                     '$unwind' => '$types'
                 ],
                 [
-                    '$project' => [
+                    '$project' => array(
                         '_id' => 0,
                         'vehicle_status' => '$types.vehicle_status',
                         'vehicle_status_color' => '$types.vehicle_status_color',
@@ -73,15 +75,35 @@ Class Helpers{
                                 '$divide' => [100, '$grandTotal']
                             ], '$types.total']
                         ]
-                    ]
+                    )
                 ]
 
 
             ]);
         })->toArray();
+       
+        $n = 1;
+        $tempVehicleStatus = [];
+        $masterVehicleStatus = MongoMasterStatusVehicle::all()->toArray();
+        if(!empty($masterVehicleStatus)){ 
+            foreach($masterVehicleStatus as $status){
+                $tempVehicleStatus[$n]['vehicle_status'] = $status['status_vehicle_name'];
+                $tempVehicleStatus[$n]['vehicle_status_color']= $status['color_hex'];
+                $tempVehicleStatus[$n]['percentage'] = null;
+                if(!empty($showVehicleStatus)){
+                    foreach($showVehicleStatus as $vehicleStatus){
+                        if($vehicleStatus['vehicle_status'] == $status['status_vehicle_name']){
+                            $tempVehicleStatus[$n]['percentage'] = $vehicleStatus['percentage'].'%';
+                        }
+                    }
+                }
+            $n++;
+            }
+        }
+        $result['showVehicleStatus'] = $tempVehicleStatus;
 
-         // showAlertSummary format
-         $result['showAlertSummary'] = MwMapping::raw(function($collection)
+        // showAlertSummary format
+         $showAlertPriority = MwMapping::raw(function($collection)
         {
             return $collection->aggregate([
                 [
@@ -136,7 +158,30 @@ Class Helpers{
 
             ]);
         })->toArray();
-       
+    
+        $n=1;
+        $tempAlertPriority = [];
+        $masterAlertPriority = MongoMasterStatusEvent::all()->toArray();
+        if(!empty($masterAlertPriority)){
+            foreach($masterAlertPriority as $priority){
+                $tempAlertPriority[$n]['alert_priority'] = $priority['status_alert_name'];
+                $tempAlertPriority[$n]['alert_priority_color']= $priority['status_alert_color_hex'];
+                $tempAlertPriority[$n]['percentage'] = null;
+                if(!empty($showAlertPriority)){
+                    
+                    foreach($showAlertPriority as $status){
+                        
+                        if($status['alert_priority'] == $priority['status_alert_name']){
+                            echo 'masuk';die();
+                            $tempAlertPriority[$n]['percentage'] = $status['percentage'].'%';
+                        }
+                    }
+                }
+            $n++;
+            }
+        }
+        $result['showAlertPriority'] = $tempAlertPriority;
+
         // showVehicleLocation format (limit 10)
         $result['showVehicleLocation'] = MwMapping::select('license_plate','last_location')->take(10)->get()->toArray();
 
@@ -171,7 +216,6 @@ Class Helpers{
 
         if ($model == 'zone') {
             $data = MsVehicle::where('area_code', $id)->first();
-            print_r($data);die();
             $now = Carbon::now()->toDateTimeString();
             $updateVehiclePair = TransactionVehiclePair::where('vehicle_code', $id)->update(['updated_at' => $now]);
         }

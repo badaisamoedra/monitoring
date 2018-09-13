@@ -20,7 +20,7 @@ class PusherController implements WampServerInterface  {
     }
 
     public function onSubscribe(ConnectionInterface $conn, $topic) {
-         
+        $this->users[$conn->resourceId] = $conn;
         $doSubscribe = $this->subscribedTopics[$topic->getId()] = $topic;
         $pushData = array(
             'topic' => 'dashboard',
