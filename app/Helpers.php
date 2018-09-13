@@ -95,7 +95,7 @@ Class Helpers{
                 if(!empty($showVehicleStatus)){
                     foreach($showVehicleStatus as $vehicleStatus){
                         if($vehicleStatus['vehicle_status'] == $status['status_vehicle_name']){
-                            $tempVehicleStatus[$n]['percentage'] = $vehicleStatus['percentage'].'%';
+                            $tempVehicleStatus[$n]['percentage'] = $vehicleStatus['percentage'];
                         }
                     }
                 }
@@ -234,7 +234,7 @@ Class Helpers{
                 foreach($showAlertPriority as $status){
                     
                     if($status['alert_priority'] == $priority['alert_priority_name']){
-                        $tempAlertPriority[$n]['percentage'] = $status['percentage'].'%';
+                        $tempAlertPriority[$n]['percentage'] = $status['percentage'];
                     }
                 }
             }
