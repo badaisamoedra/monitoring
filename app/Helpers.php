@@ -110,6 +110,13 @@ Class Helpers{
         {
             return $collection->aggregate([
                 [
+                    '$match' => [
+                        'alert_status' => [
+                            '$in' => ['Out Of Zone', 'Overspeed', 'Main Power Remove', 'Signal Jamming']
+                        ]
+                    ]
+                ],
+                [
                     '$project' => array(
                         '_id' => 0,
                         'alert_status' => '$alert_status',
@@ -176,7 +183,7 @@ Class Helpers{
             }
             $n++;
         }
-
+        
         //  get alert priority
          $showAlertPriority = MwMapping::raw(function($collection)
         {
