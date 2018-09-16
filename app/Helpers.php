@@ -284,6 +284,11 @@ Class Helpers{
         return $result;
     }
 
+    public static function trackingFormat($license_plate = null){
+        $tracking = MwMapping::where('license_plate', $license_plate)->first()->toArray();
+        return $tracking;
+    }
+
     public static function masterAlertPriority(){
         return [
             ['alert_priority_name' => 'Critical' , 'alert_priority_color_hex' => '#ff0033'],

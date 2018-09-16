@@ -19,38 +19,51 @@ class PusherController implements WampServerInterface  {
         $this->users = [];
     }
 
-    public function onSubscribe(ConnectionInterface $conn, $topic) {
-        $this->users[$conn->resourceId] = $conn;
-        $doSubscribe = $this->subscribedTopics[$topic->getId()] = $topic;
-        $pushData = array(
-            'topic' => 'dashboard',
-            'data'  => Helpers::dashboardFormat()
-        );
-        $doSubscribe->broadcast($pushData);
-    }
-
-    public function onUnSubscribe(ConnectionInterface $conn, $topic) {
-        
-    }
-
     public function onOpen(ConnectionInterface $conn) {
         $this->clients->attach($conn);
         echo "New connection! ({$conn->resourceId})\n";
     }
 
-    public function onClose(ConnectionInterface $conn) {
-        $this->clients->detach($conn);
-        echo "New Connection Close ({$conn->resourceId})\n";
+    public function onSubscribe(ConnectionInterface $conn, $topic) {
+        echo $conn->resourceId .'from sub';
+        $this->users[$conn->resourceId] = $conn;
+        $doSubscribe = $this->subscribedTopics[$topic->getId()] = $topic;
+        if($topic->getId() == 'dashboard'){
+            $pushData = array(
+                'topic' => $topic->getId(),
+                'data'  => Helpers::dashboardFormat()
+            );
+        }else{
+            $pushData = array(
+                'topic' => $topic->getId(),
+                'data'  => Helpers::trackingFormat($topic->getId())
+            );
+        }
+        $doSubscribe->broadcast($pushData);
+       
     }
+
+    public function onUnSubscribe(ConnectionInterface $conn, $topic) {
+       
+    }
+
+    
+
+    
 
     public function onCall(ConnectionInterface $conn, $id, $topic, array $params) {
         // In this application if clients send data it's because the user hacked around in console
-        $conn->callError($id, $topic, 'You are not allowed to make calls')->close();
+        $conn->close();
     }
 
     public function onPublish(ConnectionInterface $conn, $topic, $event, array $exclude, array $eligible) {
         // In this application if clients send data it's because the user hacked around in console
         $conn->close();
+    }
+
+    public function onClose(ConnectionInterface $conn) {
+        $this->clients->detach($conn);
+        echo "New Connection Close ({$conn->resourceId})\n";
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e) {

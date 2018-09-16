@@ -53,7 +53,7 @@ class MappingController extends BaseController
             }
 
             // get detail by imei
-            $mapping = $this->globalCrudRepo->find('imei',$request->imei);
+            $mapping = $this->globalCrudRepo->find('imei', $request->imei);
             self::$temp = [
                 'device_id'                => $request->device_id,
                 'imei'                     => $request->imei,
@@ -139,7 +139,8 @@ class MappingController extends BaseController
             self::bestDriver($vehicle, $request->all());
            
             // if data empty then do insert, if not empty do update
-            if(empty($mapping)){
+            $checkMapping = $this->globalCrudRepo->find('imei', $request->imei);
+            if(empty($checkMapping)){
                 //insert
                 $data = $this->globalCrudRepo->create(self::$temp);
             }else{
@@ -147,8 +148,13 @@ class MappingController extends BaseController
                 $data = $this->globalCrudRepo->updateObject($mapping->id, self::$temp);
             }
 
-            // send data to client that subscribe
+            // send data to client that subscribe dashboard
             $pushData = ['topic' => 'dashboard', 'data' => Helpers::dashboardFormat()];
+            Helpers::sendToClient($pushData);
+
+            // send data to client that subscribe tracking
+            $licensePlate = self::$temp['license_plate'];
+            $pushData = ['topic' => $licensePlate, 'data' => Helpers::trackingFormat($licensePlate)];
             Helpers::sendToClient($pushData);
 
             return $this->makeResponse(200, 1, null, $data);
@@ -308,21 +314,18 @@ class MappingController extends BaseController
         return $driverScoring;
     }
 
-    public function show(Request $request, $id)
-    {
+    public function show(Request $request, $id){
         $data = $this->globalCrudRepo->findObject($id);
         return $this->makeResponse(200, 1, null, $data);
     }
 
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id){
         $input = $request->all();
         $update = $this->globalCrudRepo->updateObject($id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }
 
-    public function destroy($id)
-    {
+    public function destroy($id){
         $delete = $this->globalCrudRepo->deleteObject($id);
         return $this->makeResponse(200, 1, null, $delete);
     }
