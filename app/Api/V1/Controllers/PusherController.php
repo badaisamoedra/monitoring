@@ -25,7 +25,6 @@ class PusherController implements WampServerInterface  {
     }
 
     public function onSubscribe(ConnectionInterface $conn, $topic) {
-        echo $conn->resourceId .'from sub';
         $this->users[$conn->resourceId] = $conn;
         $doSubscribe = $this->subscribedTopics[$topic->getId()] = $topic;
         if($topic->getId() == 'dashboard'){
@@ -44,7 +43,12 @@ class PusherController implements WampServerInterface  {
     }
 
     public function onUnSubscribe(ConnectionInterface $conn, $topic) {
-       
+        $totalSubscriber = $this->subscribedTopics[$topic->getId()]->count();
+        echo $totalSubscriber." total subscriber\n";
+        if(empty($totalSubscriber)){
+            unset($this->subscribedTopics[$topic->getId()]);
+            echo " a topic has been removed\n";
+        }
     }
 
     
@@ -63,7 +67,7 @@ class PusherController implements WampServerInterface  {
 
     public function onClose(ConnectionInterface $conn) {
         $this->clients->detach($conn);
-        echo "New Connection Close ({$conn->resourceId})\n";
+        echo "Connection {$conn->resourceId} has disconnected\n";
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e) {
