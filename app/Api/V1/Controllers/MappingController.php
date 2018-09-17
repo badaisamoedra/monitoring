@@ -51,7 +51,7 @@ class MappingController extends BaseController
             if(empty($vehicle)){
                 throw new \Exception("Error Processing Request. Cannot define vehicle");	
             }
-
+          
             // get detail by imei
             $mapping = $this->globalCrudRepo->find('imei', $request->imei);
             self::$temp = [
@@ -127,8 +127,12 @@ class MappingController extends BaseController
                 'event_type'               => $request->event_type,
                 'telemetry'                => $request->telemetry,
                 'reff_id'                  => $request->reff_id,
+                'driver_name'              => $vehicle['driver']['name'],
                 'license_plate'            => $vehicle['vehicle']['license_plate'],
+                'machine_number'           => $vehicle['vehicle']['machine_number'],
+                'simcard_number'           => $vehicle['vehicle']['simcard_number'],
                 'fuel_consumed'            => $request->total_odometer / $vehicle['vehicle']['model']['fuel_ratio'], 
+                'vehicle_description'      => $vehicle['vehicle']['brand']['brand_vehicle_name'].' '.$vehicle['vehicle']['model']['model_vehicle_name'].' '.$vehicle['vehicle']['year_of_vehicle'],
             ];
             
             // additional field
@@ -272,7 +276,6 @@ class MappingController extends BaseController
 
     public function bestDriver($vehicle, $param){
         $mongoMsEventRelated = MongoMasterEventRelated::where('provision_alert_name', $param['event_type'])->first();
-
         if(empty($mongoMsEventRelated)) $score = 0;
         else $score = $mongoMsEventRelated->score;
          

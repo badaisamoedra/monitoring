@@ -38,23 +38,20 @@ class PusherController implements WampServerInterface  {
                 'data'  => Helpers::trackingFormat($topic->getId())
             );
         }
+        echo "New subscriber! ({$conn->resourceId})\n";
         $doSubscribe->broadcast($pushData);
        
     }
 
     public function onUnSubscribe(ConnectionInterface $conn, $topic) {
         $totalSubscriber = $this->subscribedTopics[$topic->getId()]->count();
-        echo $totalSubscriber." total subscriber\n";
+        echo "One client unsubscriber a topic {$topic->getId()} \n";
         if(empty($totalSubscriber)){
             unset($this->subscribedTopics[$topic->getId()]);
             echo " One topic has been removed\n";
         }
     }
-
     
-
-    
-
     public function onCall(ConnectionInterface $conn, $id, $topic, array $params) {
         // In this application if clients send data it's because the user hacked around in console
         $conn->close();
