@@ -47,7 +47,7 @@ class PusherController implements WampServerInterface  {
         echo $totalSubscriber." total subscriber\n";
         if(empty($totalSubscriber)){
             unset($this->subscribedTopics[$topic->getId()]);
-            echo " a topic has been removed\n";
+            echo " One topic has been removed\n";
         }
     }
 
