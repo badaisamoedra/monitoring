@@ -209,10 +209,12 @@ class MappingController extends BaseController
     private function getAddress($param){
         if(!empty($param['latitude']) && !empty($param['longitude'])){
             //Send request and receive json data by address
-            $geocodeFromLatLong = file_get_contents('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='.trim($param['latitude']).'&lon='.trim($param['longitude']).'&limit=1&email=badai.samoedra@gmail.com'); 
-            $output = json_decode($geocodeFromLatLong);
+            // $geocodeFromLatLong = file_get_contents('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='.trim($param['latitude']).'&lon='.trim($param['longitude']).'&limit=1&email=badai.samoedra@gmail.com'); 
+            
+            // $output = json_decode($geocodeFromLatLong);
             //Get address from json data
-            $address = !empty($output) ? $output->display_name:'';
+            // $address = !empty($output) ? $output->display_name:'';
+            $address = "Limit Get Address Please Buy";
             //Return address of the given latitude and longitude
             if(!empty($address))
                self::$temp['last_location'] = $address;
