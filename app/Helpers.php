@@ -284,7 +284,12 @@ Class Helpers{
         return $result;
     }
 
-    public static function trackingFormat($license_plate = null){
+    public static function allTrackingFormat(){
+        $tracking = MwMapping::get()->toArray();
+        return $tracking;
+    }
+
+    public static function singleTrackingFormat($license_plate = null){
         $tracking = MwMapping::where('license_plate', $license_plate)->first()->toArray();
         return $tracking;
     }

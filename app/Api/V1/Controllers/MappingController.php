@@ -9,6 +9,7 @@ use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
 use App\Models\MsVehicle;
 use App\Models\MsStatusVehicle;
 use App\Models\MwMapping;
+use App\Models\Topic;
 use App\Models\BestDriver;
 use App\Models\RptDriverScoring;
 use App\Models\MongoMasterVehicleRelated;
@@ -20,6 +21,7 @@ use DB;
 use Carbon\Carbon;
 use \ZMQContext;
 use \ZMQ;
+
 
 class MappingController extends BaseController
 {
@@ -153,13 +155,22 @@ class MappingController extends BaseController
             }
 
             // send data to client that subscribe dashboard
-            $pushData = ['topic' => 'dashboard', 'data' => Helpers::dashboardFormat()];
-            Helpers::sendToClient($pushData);
+            if(Topic::where('name','dashboard')->first()){
+                $pushData = ['topic' => 'dashboard', 'data' => Helpers::dashboardFormat()];
+                Helpers::sendToClient($pushData);
+            }
 
-            // send data to client that subscribe tracking
-            $licensePlate = self::$temp['license_plate'];
-            $pushData = ['topic' => $licensePlate, 'data' => Helpers::trackingFormat($licensePlate)];
-            Helpers::sendToClient($pushData);
+            // send data to client that subscibe tracking-all
+            if(Topic::where('name','tracking-all')->first()){
+                $pushData = ['topic' => 'tracking-all', 'data' => Helpers::allTrackingFormat()];
+                Helpers::sendToClient($pushData);
+            }
+
+            // send data to client that subscribe single tracking
+            if(Topic::where('name', self::$temp['license_plate'])->first()){
+                $pushData = ['topic' => self::$temp['license_plate'], 'data' => Helpers::singleTrackingFormat(self::$temp['license_plate'])];
+                Helpers::sendToClient($pushData);
+            }
 
             return $this->makeResponse(200, 1, null, $data);
         } catch(\Exception $e) {

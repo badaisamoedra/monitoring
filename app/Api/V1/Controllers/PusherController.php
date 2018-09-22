@@ -5,6 +5,7 @@ use App\Http\Controllers\BaseController;
 use Ratchet\ConnectionInterface;
 use Ratchet\Wamp\WampServerInterface;
 use App\Models\MwMapping;
+use App\Models\Topic;
 use App\Helpers;
 
 class PusherController implements WampServerInterface  {
@@ -32,12 +33,24 @@ class PusherController implements WampServerInterface  {
                 'topic' => $topic->getId(),
                 'data'  => Helpers::dashboardFormat()
             );
+        }elseif($topic->getId() == 'tracking-all'){
+            $pushData = array(
+                'topic' => $topic->getId(),
+                'data'  => Helpers::allTrackingFormat()
+            );
         }else{
             $pushData = array(
                 'topic' => $topic->getId(),
-                'data'  => Helpers::trackingFormat($topic->getId())
+                'data'  => Helpers::singleTrackingFormat($topic->getId())
             );
         }
+        $objectTopic = New Topic;
+        $checkTopic  = $objectTopic->where('name', $topic->getId())->count();
+        if(!$checkTopic){
+            $objectTopic->create(['name' => $topic->getId()]);
+            echo "insert a new topic ({$topic->getId()})\n";
+        }
+
         echo "New subscriber! ({$conn->resourceId})\n";
         $doSubscribe->broadcast($pushData);
        
@@ -48,7 +61,8 @@ class PusherController implements WampServerInterface  {
         echo "One client unsubscriber a topic {$topic->getId()} \n";
         if(empty($totalSubscriber)){
             unset($this->subscribedTopics[$topic->getId()]);
-            echo " One topic has been removed\n";
+            Topic::where('name', $topic->getId())->delete();
+            echo "One topic has been removed\n";
         }
     }
     
@@ -90,5 +104,4 @@ class PusherController implements WampServerInterface  {
         $topic->broadcast($entryData);
     }
 
-    /* The rest of our methods were as they were, omitted from docs to save space */
 }
