@@ -24,22 +24,18 @@ class ZoneDetailCoordinateController extends BaseController
 
     public function store(Request $request)
     {
-        $this->validate($request, [
-            'zone_code'   => 'required',
-            'latitude'  => 'required',
-            'longitude' => 'required',
-            'status'    => 'required',
-        ]);
-        $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
-        $input  = [
-            'zone_detail_coordinate_code' => $this->generateID('MZC-', $lastId, 4),
-            'zone_code'   => $request->zone_code,
-            'latitude'  => $request->latitude,
-            'longitude' => $request->longitude,
-            'status'    => $request->status,
-        ];
-        $new = $this->globalCrudRepo->create($input);
-        return $this->makeResponse(200, 1, null, $new);
+        foreach($request->all() as $val ){
+            $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
+            $input  = [
+                'zone_detail_coordinate_code' => $this->generateID('MZC-', $lastId, 4),
+                'zone_code' => $val['zone_code'],
+                'latitude'  => $val['latitude'],
+                'longitude' => $val['longitude'],
+                'status'    => $val['status']
+            ];
+            $this->globalCrudRepo->create($input);
+        }
+        return $this->makeResponse(200, 1, null, $request->all());
     }
 
     public function show(Request $request, $id)

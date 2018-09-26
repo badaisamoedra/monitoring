@@ -277,6 +277,11 @@ Class Helpers{
         $result['showBestDriver'] = BestDriver::where('created_at', '>=', Carbon::today())
                                                 ->orderBy('score', 'desc')
                                                 ->take(10)->get()->toArray();
+        
+        // showWorstDriver format
+        $result['showBestDriver'] = BestDriver::where('created_at', '>=', Carbon::today())
+        ->orderBy('score', 'asc')
+        ->take(10)->get()->toArray();
 
         // showGeofence format                                           
         $result['showGeofence'] = MwMapping::select('license_plate', 'duration_out_zone')->where('is_out_zone', true)->take(10)->get()->toArray();
