@@ -304,8 +304,8 @@ class MappingController extends BaseController
 
         if(!empty($check)){
             // update
-            foreach($data as $dt => $val){
-                $check->{$dt} = $val;
+            foreach($data as $key => $val){
+                $check->{$key} = $val;
             }
             $bestDriver = $check->save();
         }else{

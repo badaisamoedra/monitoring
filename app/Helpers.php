@@ -13,6 +13,7 @@ use App\Models\BestDriver;
 use Carbon\Carbon;
 use \ZMQContext;
 use \ZMQ;
+use DB;
 
 Class Helpers{
 
@@ -28,7 +29,7 @@ Class Helpers{
             'showGeofence'              => []
         ];
 
-        // showVehicleStatus format
+        //*********************************** showVehicleStatus format ****************************************//
         $showVehicleStatus = MwMapping::raw(function($collection)
         {
             return $collection->aggregate([
@@ -105,7 +106,8 @@ Class Helpers{
         }
         $result['showVehicleStatus'] = $tempVehicleStatus;
 
-        // showAlertSummary format
+
+        //*********************************** showAlertSummary format ****************************************//
         // get alert status event
         $showAlertStatus = MwMapping::raw(function($collection)
         {
@@ -185,7 +187,8 @@ Class Helpers{
             $n++;
         }
         
-        //  get alert priority
+
+        //************************************* get alert priority *******************************************//
          $showAlertPriority = MwMapping::raw(function($collection)
         {
             return $collection->aggregate([
@@ -263,35 +266,60 @@ Class Helpers{
 
         $result['showAlertSummary'] = array_merge($tempAlertPriority, $tempAlertStatus);
 
-        // showGPSnotUpdatedOneDay
-        $result['showGPSnotUpdatedOneDay'] = MwMapping::where('updated_at', '>=', Carbon::today())
+        
+        //************************************* showGPSnotUpdatedOneDay ****************************************//
+        $min24hours = Carbon::now()->subHours(2);
+        $max24hours = Carbon::now()->subHours(24);
+        $showGPSnotUpdatedOneDay = MwMapping::where('updated_at', '>=', $max24hours)
+                                                      ->where('updated_at', '<=', $min24hours)
                                                       ->orderBy('updated_at', 'desc')
                                                       ->take(10)->get()->toArray();
 
-        // showGPSnotUpdatedThreeDay
-        $threeDaysAgo = Carbon::now()->subDays(3)->format('Y-m-d H:i:s');
-        $result['showGPSnotUpdatedThreeDay'] = MwMapping::where('updated_at', '<=', $threeDaysAgo)
+        if(!empty($showGPSnotUpdatedOneDay)) foreach($showGPSnotUpdatedOneDay as $val){
+            $result['showGPSnotUpdatedOneDay'][] = [
+                                                    'license_plae' => $val['license_plate'],
+                                                    'last_updated' => $val['updated_at'],
+                                                    'duration' => Carbon::parse($val['updated_at'])->diffForHumans()
+            ];
+        }
+        
+
+        //*********************************** showGPSnotUpdatedThreeDay start ***********************************//
+        $threeDaysAgo = Carbon::now()->subDays(3);
+        $showGPSnotUpdatedThreeDay = MwMapping::where('updated_at', '<=', $threeDaysAgo)
                                                         ->orderBy('updated_at', 'desc')
                                                         ->take(10)->get()->toArray();
 
-        // showTopMileage format
+        if(!empty($showGPSnotUpdatedThreeDay)) foreach($showGPSnotUpdatedThreeDay as $val){
+            $result['showGPSnotUpdatedThreeDay'][] = [
+                                                    'license_plae' => $val['license_plate'],
+                                                    'last_updated' => $val['updated_at'],
+                                                    'duration' => Carbon::parse($val['updated_at'])->diffForHumans()
+            ];
+        }
+
+
+        //**************************************** showTopMileage format ****************************************//
         $result['showTopMileage'] = MwMapping::where('created_at', '>=', Carbon::today())
                                              ->orderBy('total_odometer', 'desc')
                                              ->take(10)->get()->toArray();
 
-        // showBestDriver format
+        
+        //**************************************** showBestDriver format ****************************************//
         $result['showBestDriver'] = BestDriver::where('created_at', '>=', Carbon::today())
                                               ->orWhere('updated_at', '>=', Carbon::today())
                                               ->orderBy('score', 'desc')
                                               ->take(10)->get()->toArray();
         
-        // showWorstDriver format
+
+        //**************************************** showWorstDriver format ****************************************//
         $result['showWorstDriver'] = BestDriver::where('created_at', '>=', Carbon::today())
                                                ->orWhere('updated_at', '>=', Carbon::today())
                                                ->orderBy('score', 'asc')
                                                ->take(10)->get()->toArray();
 
-        // showGeofence format                                           
+
+        //**************************************** showGeofence format *******************************************//                                          
         $result['showGeofence'] = MwMapping::select('license_plate', 'duration_out_zone')
                                            ->where('is_out_zone', true)
                                            ->take(10)->get()->toArray();
