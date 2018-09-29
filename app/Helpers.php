@@ -18,14 +18,15 @@ Class Helpers{
 
     public static function dashboardFormat(){
         $result = [
-            'showVehicleStatus'   => [],
-            'showVehicleLocation' => [],
-            'showUtilization'     => [],
-            'showAssetUsage'      => [],
-            'showBestDriver'      => [],
-            'showGeofence'        => []
+            'showVehicleStatus'         => [],
+            'showAlertSummary'          => [],
+            'showGPSnotUpdatedOneDay'   => [],
+            'showGPSnotUpdatedThreeDay' => [],
+            'showTopMileage'            => [],
+            'showBestDriver'            => [],
+            'showWorstDriver'           => [],
+            'showGeofence'              => []
         ];
-        $dataMapping = MwMapping::take(10)->get();
 
         // showVehicleStatus format
         $showVehicleStatus = MwMapping::raw(function($collection)
@@ -262,29 +263,38 @@ Class Helpers{
 
         $result['showAlertSummary'] = array_merge($tempAlertPriority, $tempAlertStatus);
 
-        // showVehicleLocation format (limit 10)
-        $result['showVehicleLocation'] = MwMapping::select('license_plate','last_location')->take(10)->get()->toArray();
+        // showGPSnotUpdatedOneDay
+        $result['showGPSnotUpdatedOneDay'] = MwMapping::where('updated_at', '>=', Carbon::today())
+                                                      ->orderBy('updated_at', 'desc')
+                                                      ->take(10)->get()->toArray();
 
-        // showUtilization format
-        $result['showUtilization']['total_moving_time'] = MwMapping::where('vehicle_status','Moving')->count();
-        $result['showUtilization']['total_idle_time']   = MwMapping::where('vehicle_status','!=', 'Moving')->count();
-        
-        // showAssetUsage format
-        $result['showAssetUsage']['total_distance']  = MwMapping::sum('total_odometer');
-        $result['showAssetUsage']['fuel_concumed']   = MwMapping::sum('fuel_consumed');
+        // showGPSnotUpdatedThreeDay
+        $threeDaysAgo = Carbon::now()->subDays(3)->format('Y-m-d H:i:s');
+        $result['showGPSnotUpdatedThreeDay'] = MwMapping::where('updated_at', '<=', $threeDaysAgo)
+                                                        ->orderBy('updated_at', 'desc')
+                                                        ->take(10)->get()->toArray();
+
+        // showTopMileage format
+        $result['showTopMileage'] = MwMapping::where('created_at', '>=', Carbon::today())
+                                             ->orderBy('total_odometer', 'desc')
+                                             ->take(10)->get()->toArray();
 
         // showBestDriver format
         $result['showBestDriver'] = BestDriver::where('created_at', '>=', Carbon::today())
-                                                ->orderBy('score', 'desc')
-                                                ->take(10)->get()->toArray();
+                                              ->orWhere('updated_at', '>=', Carbon::today())
+                                              ->orderBy('score', 'desc')
+                                              ->take(10)->get()->toArray();
         
         // showWorstDriver format
-        $result['showBestDriver'] = BestDriver::where('created_at', '>=', Carbon::today())
-        ->orderBy('score', 'asc')
-        ->take(10)->get()->toArray();
+        $result['showWorstDriver'] = BestDriver::where('created_at', '>=', Carbon::today())
+                                               ->orWhere('updated_at', '>=', Carbon::today())
+                                               ->orderBy('score', 'asc')
+                                               ->take(10)->get()->toArray();
 
         // showGeofence format                                           
-        $result['showGeofence'] = MwMapping::select('license_plate', 'duration_out_zone')->where('is_out_zone', true)->take(10)->get()->toArray();
+        $result['showGeofence'] = MwMapping::select('license_plate', 'duration_out_zone')
+                                           ->where('is_out_zone', true)
+                                           ->take(10)->get()->toArray();
 
         return $result;
     }
