@@ -277,7 +277,7 @@ Class Helpers{
 
         if(!empty($showGPSnotUpdatedOneDay)) foreach($showGPSnotUpdatedOneDay as $val){
             $result['showGPSnotUpdatedOneDay'][] = [
-                                                    'license_plae' => $val['license_plate'],
+                                                    'license_plate' => $val['license_plate'],
                                                     'last_updated' => $val['updated_at'],
                                                     'duration' => Carbon::parse($val['updated_at'])->diffForHumans()
             ];
@@ -292,7 +292,7 @@ Class Helpers{
 
         if(!empty($showGPSnotUpdatedThreeDay)) foreach($showGPSnotUpdatedThreeDay as $val){
             $result['showGPSnotUpdatedThreeDay'][] = [
-                                                    'license_plae' => $val['license_plate'],
+                                                    'license_plate' => $val['license_plate'],
                                                     'last_updated' => $val['updated_at'],
                                                     'duration' => Carbon::parse($val['updated_at'])->diffForHumans()
             ];
