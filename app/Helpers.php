@@ -268,10 +268,10 @@ Class Helpers{
 
         
         //************************************* showGPSnotUpdatedOneDay ****************************************//
-        $min24hours = Carbon::now()->subHours(2);
         $max24hours = Carbon::now()->subHours(24);
+        $max72hours = Carbon::now()->subHours(72);
         $showGPSnotUpdatedOneDay = MwMapping::where('updated_at', '>=', $max24hours)
-                                                      ->where('updated_at', '<=', $min24hours)
+                                                      ->where('updated_at', '<', $max72hours)
                                                       ->orderBy('updated_at', 'desc')
                                                       ->take(10)->get()->toArray();
 
@@ -300,7 +300,7 @@ Class Helpers{
 
 
         //**************************************** showTopMileage format ****************************************//
-        $result['showTopMileage'] = MwMapping::where('created_at', '>=', Carbon::today())
+        $result['showTopMileage'] = MwMapping::where('created_at', '<=', Carbon::today())
                                              ->orderBy('total_odometer', 'desc')
                                              ->take(10)->get()->toArray();
 
