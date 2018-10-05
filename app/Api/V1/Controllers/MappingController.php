@@ -9,6 +9,7 @@ use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
 use App\Models\MsVehicle;
 use App\Models\MsStatusVehicle;
 use App\Models\MwMapping;
+use App\Models\MwMappingHistory;
 use App\Models\Topic;
 use App\Models\BestDriver;
 use App\Models\RptDriverScoring;
@@ -153,6 +154,9 @@ class MappingController extends BaseController
                 //update
                 $data = $this->globalCrudRepo->updateObject($mapping->id, self::$temp);
             }
+
+            // insert to history
+            MwMappingHistory::create(self::$temp);
 
             // send data to client that subscribe dashboard
             if(Topic::where('name','dashboard')->first()){
