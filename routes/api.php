@@ -113,6 +113,15 @@ $api->version('v1', function ($api) {
             $api->post('vehicle-status', 'VehicleStatusController@store');
             $api->put('vehicle-status/{id}', 'VehicleStatusController@update');
             $api->delete('vehicle-status/{id}', 'VehicleStatusController@destroy');
+            //report
+            $api->get('rpt-driverScore', 'ReportController@reportDriverScore');
+            $api->get('rpt-historycal', 'ReportController@reportHistorical');
+            $api->get('rpt-unplugged', 'ReportController@reportUnPlugged');
+            $api->get('rpt-outOfGeofence', 'ReportController@reportOutOfGeofence');
+            $api->get('rpt-notification', 'ReportController@reportNotification');
+            $api->get('rpt-KMdriven', 'ReportController@reportKMDriven');
+            $api->get('rpt-fleetUtilisation', 'ReportController@reportFleetUtilisation');
+            $api->get('rpt-gpsNotUpdate', 'ReportController@reportGpsNotUpdate');
         });
     });
 
