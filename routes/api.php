@@ -122,6 +122,7 @@ $api->version('v1', function ($api) {
             $api->get('rpt-KMdriven', 'ReportController@reportKMDriven');
             $api->get('rpt-fleetUtilisation', 'ReportController@reportFleetUtilisation');
             $api->get('rpt-gpsNotUpdate', 'ReportController@reportGpsNotUpdate');
+            $api->get('rpt-overSpeed', 'ReportController@reportOverSpeed');
         });
     });
 

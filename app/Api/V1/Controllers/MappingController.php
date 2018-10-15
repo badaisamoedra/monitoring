@@ -325,10 +325,11 @@ class MappingController extends BaseController
 
     public function driverScoring($vehicle, $data){
          $data = [
-            'driver_code'  => $vehicle['driver']['driver_code'],
-            'driver_name'  => $vehicle['driver']['name'],
-            'alert_status' => self::$temp['alert_status'],
-            'score'        => $data['score'],
+            'driver_code'   => $vehicle['driver']['driver_code'],
+            'driver_name'   => $vehicle['driver']['name'],
+            'alert_status'  => self::$temp['alert_status'],
+            'score'         => $data['score'],
+            'license_plate' => $data['license_plate'],
         ];
         $driverScoring = RptDriverScoring::create($data);
         return $driverScoring;
