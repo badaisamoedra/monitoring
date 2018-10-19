@@ -94,7 +94,7 @@ class ReportController extends BaseController
                         'idle_time'   => ['$sum' => '$idle_time'],
                         'engine_on_time' => ['$sum' => '$engine_on_time'],
                         'total_mileage'  => ['$sum' => '$total_odometer'],
-                        'speed' => ['$sum'  => '$speed'],
+                        'speed' => ['$sum' => '$speed'],
                         'duration_out_zone' => ['$sum' => '$duration_out_zone'],
                         'fuel' => ['$sum' => 'fuel_consumed'],
                     )
@@ -111,6 +111,11 @@ class ReportController extends BaseController
                         'average_speed'  => [
                             '$divide' => [ '$speed', '$total_data']
                         ],
+                        // 'rasio_engine_on' => [
+                        //     '$multiply' => [[
+                        //         '$divide' => [100, '$engine_on_time']
+                        //     ], 100]
+                        // ],
                         'duration_out_zone' => '$duration_out_zone',
                         
                     )
@@ -357,7 +362,8 @@ class ReportController extends BaseController
                         'duration'       => '$duration_out_zone', //ini di sum ga?
                         'speed'          => '$speed',
                         'address'        => '$last_location',
-                        // GeofenceArea
+                        'is_out_zone'    => '$is_out_zone',
+                        'geofence_area'   => 'Ambil dari mana nih?' //ini darimana?
                     )
                 ],
                 [
@@ -374,7 +380,7 @@ class ReportController extends BaseController
         $this->filters($request);
         $data = MwMappingHistory::raw(function($collection) use ($request)
         {
-            $search['$match'] = [];
+            $search['$match']['alert_status'] = 'Overspeed';
             if($request->has('license_plate') && !empty($request->license_plate)){
               $search['$match']['license_plate'] = $request->license_plate;
             }
@@ -391,21 +397,20 @@ class ReportController extends BaseController
             $query = [
                 [
                     '$project' => array(
-                        'license_plate'  => '$license_plate',
+                        'license_plate'   => '$license_plate',
                         'created_at'      => '$created_at',
-                        'vin'            => '$vehicle_number',
-                        'machine_number' => '$machine_number',
-                        // Duration
-                        // KategoriOverspeed
-                        'speed'          => '$speed',
-                        'address'        => '$last_location',
+                        'vin'             => '$vehicle_number',
+                        'machine_number'  => '$machine_number',
+                        'address'         => '$last_location',
+                        'speed'           => '$speed',
+                        'over_speed_time' => '$over_speed_time',
+                        'category_over_speed' => '$category_over_speed',
                     )
                 ],
                 [
                     '$sort' => ['created_at' => -1]
                 ]
             ];
-
             return $collection->aggregate(array_merge([$search], $query));
         });
         return $this->makeResponse(200, 1, null, $data);
@@ -432,12 +437,13 @@ class ReportController extends BaseController
             $query = [
             [
                 '$project' => array(
+                    'geofence_area'  => 'ambil dari mana nih?', //ambil dari mana?
+                    'poi'            => 'ambil dari mana nih?', //ambil dari mana?
                     'created_at'     => '$created_at',
                     'license_plate'  => '$license_plate',
                     'vin'            => '$vehicle_number',
                     'longitude'      => '$longitude',
                     'latitude'       => '$latitude',
-                    'speed'          => '$speed',
                     'alert'          => '$alert_status',
                     'address'        => '$last_location',
                 )

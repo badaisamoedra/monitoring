@@ -139,7 +139,9 @@ class MappingController extends BaseController
                 'moving_time'              => 0,
                 'engine_on_time'           => 0,
                 'idle_time'                => 0,
-                'park_time'                => 0
+                'park_time'                => 0,
+                'over_speed_time'          => 0,
+                'category_over_speed'      => null 
             ];
             
             // additional field
@@ -231,6 +233,16 @@ class MappingController extends BaseController
             self::$temp['status_alert_color_hex']   = $mongoMsEventRelated->status_alert_color_hex;
             self::$temp['alert_priority'] = $mongoMsEventRelated->priority_detail['alert_priority_name'];
             self::$temp['alert_priority_color'] = $mongoMsEventRelated->priority_detail['alert_priority_color_hex'];
+
+            // if alert_status = Overspeed then insert duration
+            if( $mongoMsEventRelated->alert_name == 'Overspeed'){
+                self::$temp['over_speed_time'] = $this->checkDuration($param);
+                if($param['speed'] >= 80 && $param['speed'] <= 100)
+                    self::$temp['category_over_speed'] = '80 >= 100';
+                else 
+                    self::$temp['category_over_speed'] = '> 100';
+            }
+                
         }else{ 
             self::$temp['alert_status'] = null;
             self::$temp['status_alert_color_hex'] = null;
