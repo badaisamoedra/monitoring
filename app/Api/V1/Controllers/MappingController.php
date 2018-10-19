@@ -191,24 +191,24 @@ class MappingController extends BaseController
         if($param['ignition'] == 1) {
             if($param['ignition'] == 1 && $param['speed'] > 0) {
                 self::$temp['vehicle_status'] = 'Moving';
-                self::$temp['moving_time'] = $this->checkDuration($request->all());
+                self::$temp['moving_time'] = $this->checkDuration($param);
             } else {
-                self::$temp['engine_on_time'] = $this->checkDuration($request->all());
+                self::$temp['engine_on_time'] = $this->checkDuration($param);
             }
         } 
 
         if($param['ignition'] == 1) {
             if($param['ignition'] == 1 && $param['speed'] == 0){
                 self::$temp['vehicle_status'] = 'Stop';
-                self::$temp['idle_time'] = $this->checkDuration($request->all());
+                self::$temp['idle_time'] = $this->checkDuration($param);
             } else {
-                self::$temp['engine_on_time'] = $this->checkDuration($request->all());
+                self::$temp['engine_on_time'] = $this->checkDuration($param);
             }
         }
 
         if($param['ignition'] == 0 && $param['speed'] == 0){
             self::$temp['vehicle_status'] = 'Offline';
-            self::$temp['park_time'] = $this->checkDuration($request->all());
+            self::$temp['park_time'] = $this->checkDuration($param);
         }
             
         if($param['event_type'] == 'MB_CN')
