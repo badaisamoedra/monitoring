@@ -136,10 +136,6 @@ class MappingController extends BaseController
                 'simcard_number'           => $vehicle['vehicle']['simcard_number'],
                 'fuel_consumed'            => $request->total_odometer / $vehicle['vehicle']['model']['fuel_ratio'], 
                 'vehicle_description'      => $vehicle['vehicle']['brand']['brand_vehicle_name'].' '.$vehicle['vehicle']['model']['model_vehicle_name'].' '.$vehicle['vehicle']['year_of_vehicle'],
-                'moving_time'              => 0,
-                'engine_on_time'           => 0,
-                'idle_time'                => 0,
-                'park_time'                => 0
             ];
             
             // additional field
@@ -200,7 +196,7 @@ class MappingController extends BaseController
         if($param['ignition'] == 1) {
             if($param['ignition'] == 1 && $param['speed'] == 0){
                 self::$temp['vehicle_status'] = 'Stop';
-                self::$temp['idle_time'] = $this->checkDuration($request->all());
+                self::$temp['iddle_time'] = $this->checkDuration($request->all());
             } else {
                 self::$temp['engine_on_time'] = $this->checkDuration($request->all());
             }
