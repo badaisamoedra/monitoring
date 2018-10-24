@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
 use App\Models\MwMappingHistory;
 use App\Models\RptDriverScoring;
+use App\Models\MongoMasterEventRelated;
 use Carbon\Carbon;
 use Auth;
 
@@ -92,14 +93,14 @@ class ReportController extends BaseController
                             'else' =>  0
                         ]
                     ],
-                    'bump_detection' => [
+                    'bump_detection' => [ //confirm
                         '$cond' => [
                             'if'   => [ '$eq' => [ '$alert_status', 'Overspeed' ]],
                             'then' => '$score',
                             'else' =>  0
                         ]
                     ],
-                    'out_of_zone' => [ //confirm
+                    'out_of_zone' => [
                         '$cond' => [
                             'if'   => [ '$eq' => [ '$alert_status', 'Out Of Zone' ]],
                             'then' => '$score',
@@ -202,6 +203,16 @@ class ReportController extends BaseController
             if($request->has('license_plate') && !empty($request->license_plate)){
               $search['$match']['license_plate'] = $request->license_plate;
             }
+
+            if($request->has('kategori') && !empty($request->kategori)){
+                if($request->kategori == 1){
+                    // not update <= 1 day
+
+                }else{
+                    // not update > 3 days
+                }
+                // $search['$match']['kategori'] = $request->kategori;
+              }
             
             if($request->has('startDate') || $request->has('endDate')){
                $created_at = [];
@@ -216,24 +227,24 @@ class ReportController extends BaseController
                 [
                     '$project' => array(
                         'gps_supplier'   => [
-                            '$ifNull' => [ null, "PT Blue Chip Transland / Teltonika" ]
+                            '$ifNull' => ['$gps_supplier', "PT Blue Chip Transland / Teltonika"]
                         ],
-                        'branch'         => [
-                            '$ifNull' => [ null, "Ambilnya darimana nih?" ] //need to confirm
+                        'branch'   => [
+                            '$ifNull' => [ '$branch', null ]
                         ],
                         'license_plate'  => '$license_plate',
                         'imei'           => '$imei',
                         'vin'            => '$vehicle_number',
+                        'install_date'   => '$date_installation',
                         'created_at'     => '$created_at',
-                        'address'        => '$last_location',
-                        'gps_satellite'  => '$satellite', //need to confirm
-                        'gsm_signal'     => '$gsm_signal_level', //need to confirm
+                        'last_location'  => '$last_location',
+                        'gps_satellite'  => '$satellite',
+                        'gsm_signal'     => '$gsm_signal_level',
                     )
                 ],
                 [
                     '$sort' => ['created_at' => -1]
                 ]
-
             ];
 
             return $collection->aggregate(array_merge([$search], $query));
@@ -389,6 +400,13 @@ class ReportController extends BaseController
                if(!empty($lte)) $created_at['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
                if(!empty($created_at)) $search['$match']['created_at'] = $created_at;
             }
+
+            $msAlert = [];
+            $msEventRelated = MongoMasterEventRelated::whereNotNull('notification_code')->get()->toArray();
+            if(!empty($msEventRelated)){
+                foreach($msEventRelated as $msAlert) $msAlert[] = $msAlert['alert_name'];
+                if(!empty($msAlert)) $search['$match']['alert_status'] = ['$in' => $msAlert];
+            }
             
             $query = [
                 [
@@ -416,7 +434,6 @@ class ReportController extends BaseController
                 ]
 
             ];
-
             return $collection->aggregate(array_merge([$search], $query));
         });
         return $this->makeResponse(200, 1, null, $data);
@@ -426,7 +443,7 @@ class ReportController extends BaseController
         $this->filters($request);
         $data = MwMappingHistory::raw(function($collection) use ($request)
         {
-            $search['$match']['is_out_zone'] = true;
+            $search['$match'] = [];
             if($request->has('license_plate') && !empty($request->license_plate)){
               $search['$match']['license_plate'] = $request->license_plate;
             }
@@ -439,19 +456,40 @@ class ReportController extends BaseController
                if(!empty($lte)) $created_at['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
                if(!empty($created_at)) $search['$match']['created_at'] = $created_at;
             }
-            
+
             $query = [
                 [
+                    '$group' => array(
+                        '_id' => [
+                            'imei' => '$imei',
+                            'is_out_zone' => '$is_out_zone',
+                        ],
+                        'license_plate'     => ['$first' => '$license_plate'],
+                        'vehicle_number'    => ['$first' => '$vehicle_number'],
+                        'machine_number'    => ['$first' => '$machine_number'],
+                        'created_at'        => ['$first' => '$created_at'],
+                        'address'           => ['$last'  => '$last_location'],
+                        'duration_out_zone' => ['$sum'   => '$duration_out_zone'],
+                        'duration_in_zone'  => ['$sum'   => '$duration_in_zone']
+                    )
+                ],
+                [
                     '$project' => array(
+                        '_id'            => 0,
                         'license_plate'  => '$license_plate',
                         'created_at'     => '$created_at',
                         'vin'            => '$vehicle_number',
                         'machine_number' => '$machine_number',
-                        'duration'       => '$duration_out_zone', //ini di sum ga?
-                        'speed'          => '$speed',
-                        'address'        => '$last_location',
-                        'is_out_zone'    => '$is_out_zone',
-                        'geofence_area'   => 'Ambil dari mana nih?' //ini darimana?
+                        'address'        => '$address',
+                        'is_out_zone'    => '$_id.is_out_zone',
+                        'duration'       => [
+                            '$cond' => [
+                                'if'   => ['$eq'    => [ '$_id.is_out_zone', true ]],
+                                'then' => ['$sum'   => '$duration_out_zone'],
+                                'else' => ['$sum'   => '$duration_in_zone'],
+                            ]
+                        ],
+                        // 'geofence_area'  => 'Ambil dari mana nih?' //ini darimana?
                     )
                 ],
                 [
@@ -508,7 +546,7 @@ class ReportController extends BaseController
         $this->filters($request);
         $data = MwMappingHistory::raw(function($collection) use ($request)
         {  
-            $search['$match']['vehicle_status'] = 'Unppluged';
+            $search['$match']['vehicle_status'] = 'Unplugged';
             if($request->has('license_plate') && !empty($request->license_plate)){
               $search['$match']['license_plate'] = $request->license_plate;
             }
@@ -525,8 +563,12 @@ class ReportController extends BaseController
             $query = [
             [
                 '$project' => array(
-                    'geofence_area'  => 'ambil dari mana nih?', //ambil dari mana?
-                    'poi'            => 'ambil dari mana nih?', //ambil dari mana?
+                    'geofence_area'  => [
+                        '$ifNull' => [ null, "ambil dari mana" ] //ambil dari mana?
+                    ],
+                    'poi'            => [
+                        '$ifNull' => [ null, "ambil dari mana" ] //ambil dari mana?
+                    ],
                     'created_at'     => '$created_at',
                     'license_plate'  => '$license_plate',
                     'vin'            => '$vehicle_number',

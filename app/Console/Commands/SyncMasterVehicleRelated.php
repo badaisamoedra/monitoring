@@ -84,6 +84,7 @@ class SyncMasterVehicleRelated extends Command
 						'deleted_at'			=> $data->vehicle->deleted_at,
 						'brand'					=> $dataBrandModel['brand'],
 						'model'					=> $dataBrandModel['model'],
+						'area'					=> $dataBrandModel['area'],
 						'zone'					=> $dataZones
 					];
 
@@ -114,7 +115,7 @@ class SyncMasterVehicleRelated extends Command
 				} else {
 
 					$deleteByObjectId = $this->globalCrudRepo->delete('_id', $checkDataMongo->_id);
-					$vehicleBrandModel = MsVehicle::with(['brand','model'])->where('vehicle_code', $data->vehicle->vehicle_code)->first();
+					$vehicleBrandModel = MsVehicle::with(['brand','model','area'])->where('vehicle_code', $data->vehicle->vehicle_code)->first();
 					$dataBrandModel = $vehicleBrandModel->toArray();
 
 					$getZones = MsZone::with(['zone_detail'])->where('area_code', $data->vehicle->area_code)->get();
@@ -142,6 +143,7 @@ class SyncMasterVehicleRelated extends Command
 						'deleted_at'			=> $data->vehicle->deleted_at,
 						'brand'					=> $dataBrandModel['brand'],
 						'model'					=> $dataBrandModel['model'],
+						'area'					=> $dataBrandModel['area'],
 						'zone'					=> $dataZones
 					];
 

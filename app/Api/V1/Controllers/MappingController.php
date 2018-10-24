@@ -48,8 +48,7 @@ class MappingController extends BaseController
     public function store(Request $request)
     {
         try {
-           
-            // get license plate
+            // get vehicle
             $vehicle = MongoMasterVehicleRelated::where('vehicle.imei_obd_number', $request->imei)->first();
             if(empty($vehicle)){
                 throw new \Exception("Error Processing Request. Cannot define vehicle");	
@@ -58,6 +57,8 @@ class MappingController extends BaseController
             // get detail by imei
             $mapping = $this->globalCrudRepo->find('imei', $request->imei);
             self::$temp = [
+                'gps_supplier'             => 'PT Blue Chip Transland / Teltonika',
+                'branch'                   => $vehicle['vehicle']['area']['area_name'],
                 'device_id'                => $request->device_id,
                 'imei'                     => $request->imei,
                 'device_type'              => $request->device_type,
@@ -131,6 +132,7 @@ class MappingController extends BaseController
                 'telemetry'                => $request->telemetry,
                 'reff_id'                  => $request->reff_id,
                 'driver_name'              => $vehicle['driver']['name'],
+                'date_installation'        => $vehicle['vehicle']['date_installation'],
                 'license_plate'            => $vehicle['vehicle']['license_plate'],
                 'machine_number'           => $vehicle['vehicle']['machine_number'],
                 'simcard_number'           => $vehicle['vehicle']['simcard_number'],
@@ -141,7 +143,10 @@ class MappingController extends BaseController
                 'idle_time'                => 0,
                 'park_time'                => 0,
                 'over_speed_time'          => 0,
-                'category_over_speed'      => null 
+                'category_over_speed'      => null,
+                'is_out_zone'              => false,
+                'duration_out_zone'        => 0,
+                'duration_in_zone'         => 0
             ];
             
             // additional field
@@ -287,7 +292,7 @@ class MappingController extends BaseController
        $point = array($param['latitude'], $param['longitude']);
        if($this->checkPolygon($point, $polygon)){
          self::$temp['is_out_zone'] = FALSE;
-         self::$temp['duration_out_zone'] = null;
+         self::$temp['duration_in_zone']  = $now->diffInMinutes($deviceTime);
        }else{
          self::$temp['is_out_zone'] = TRUE;
          self::$temp['duration_out_zone'] = $now->diffInMinutes($deviceTime);

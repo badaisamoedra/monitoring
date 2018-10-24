@@ -38,4 +38,9 @@ class MsVehicle extends Model {
         return $this->hasOne('App\Models\MsModelVehicle','model_vehicle_code','model_vehicle_code');
     }
 
+    public function area()
+    {
+        return $this->hasOne('App\Models\MsAreas','area_code','area_code');
+    }
+
 }
