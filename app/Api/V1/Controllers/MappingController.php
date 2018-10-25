@@ -218,10 +218,12 @@ class MappingController extends BaseController
             self::$temp['park_time'] = $this->checkDuration($param);
         }
             
-        if($param['event_type'] == 'MB_CN')
+        if($param['event_type'] == 'MB_CN'){
             self::$temp['vehicle_status'] = 'Unplugged';
+            //set poi
+        }
         
-        //get vehicle status color
+        // get vehicle status color
         if(isset(self::$temp['vehicle_status'])){
             $msStatusVehicle = MongoMasterStatusVehicle::where('status_vehicle_name', self::$temp['vehicle_status'])->first();
             if(!empty($msStatusVehicle)) 
@@ -235,19 +237,24 @@ class MappingController extends BaseController
         $mongoMsEventRelated = MongoMasterEventRelated::where('provision_alert_name', $param['event_type'])->first();
         if(!empty($mongoMsEventRelated)){ 
             self::$temp['alert_status']   = $mongoMsEventRelated->alert_name;
-            self::$temp['status_alert_color_hex']   = $mongoMsEventRelated->status_alert_color_hex;
+            self::$temp['status_alert_color_hex'] = $mongoMsEventRelated->status_alert_color_hex;
             self::$temp['alert_priority'] = $mongoMsEventRelated->priority_detail['alert_priority_name'];
             self::$temp['alert_priority_color'] = $mongoMsEventRelated->priority_detail['alert_priority_color_hex'];
 
             // if alert_status = Overspeed then insert duration
-            if( $mongoMsEventRelated->alert_name == 'Overspeed'){
+            if($mongoMsEventRelated->alert_name == 'Overspeed'){
                 self::$temp['over_speed_time'] = $this->checkDuration($param);
                 if($param['speed'] >= 80 && $param['speed'] <= 100)
                     self::$temp['category_over_speed'] = '80 >= 100';
                 else 
                     self::$temp['category_over_speed'] = '> 100';
             }
-                
+            // send telegram
+            if(isset($mongoMsEventRelated['notif_detail']) && !empty($mongoMsEventRelated['notif_detail'])){
+                $notif = explode(',', $mongoMsEventRelated['notif_detail']['notification_code']);
+                if(in_array('NTF-0001', $notif)) 
+                    Helpers::sendTelegram(self::$temp);
+            }
         }else{ 
             self::$temp['alert_status'] = null;
             self::$temp['status_alert_color_hex'] = null;
@@ -358,6 +365,7 @@ class MappingController extends BaseController
             $bestDriver = $bestDriver->create($data);
         }
        
+
         //insert to rpt_driver_scoring
         self::driverScoring($vehicle, $data);
         
@@ -366,12 +374,14 @@ class MappingController extends BaseController
 
     public function driverScoring($vehicle, $data){
          $data = [
-            'driver_code'   => $vehicle['driver']['driver_code'],
-            'driver_name'   => $vehicle['driver']['name'],
-            'alert_status'  => self::$temp['alert_status'],
-            'score'         => $data['score'],
-            'license_plate' => $data['license_plate'],
+            'driver_code'      => $vehicle['driver']['driver_code'],
+            'driver_name'      => $vehicle['driver']['name'],
+            'alert_status'     => self::$temp['alert_status'],
+            'eco_driving_type' => self::$temp['eco_driving_type'],
+            'score'            => $data['score'],
+            'license_plate'    => $data['license_plate'],
         ];
+
         $driverScoring = RptDriverScoring::create($data);
         return $driverScoring;
     }

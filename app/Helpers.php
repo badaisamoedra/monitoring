@@ -10,6 +10,7 @@ use App\Models\MongoMasterStatusEvent;
 use App\Models\MongoMasterEventRelated;
 use App\Models\MsVehicle;
 use App\Models\BestDriver;
+use App\Telegram;
 use Carbon\Carbon;
 use \ZMQContext;
 use \ZMQ;
@@ -366,4 +367,18 @@ Class Helpers{
         }
     }
    
+    public static function sendTelegram($param){
+        $token  = "765886508:AAGZVU3GqgxRtWqlAnLOIihYr77R_0eV-ko";	
+        $chatId = "-265247766";
+
+        $txt  ="<strong>Gpstracking:</strong>\n";
+        $txt .="No.Pol : ".$param['license_plate']." | ";
+        $txt .="Waktu : ".Carbon::parse($param['device_time'])->format('Y-m-d H:i:s')." | ";
+        $txt .="Alert : ".$param['alert_status']." | ";
+        $txt .="Lokasi : ".$param['last_location']." | ";
+        $txt .= "https://www.google.co.id/maps/place/".$param['longitude'].",".$param['latitude'];
+        
+        $telegram = new Telegram($token);
+        $telegram->sendMessage($chatId, $txt, 'HTML');
+    }
 }

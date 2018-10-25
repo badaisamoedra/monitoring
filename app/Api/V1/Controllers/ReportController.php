@@ -60,7 +60,7 @@ class ReportController extends BaseController
                     ],
                     'harsh_acceleration' => [ //confirm
                         '$cond' => [
-                            'if'   => [ '$eq' => [ '$alert_status', 'Overspeed' ]],
+                            'if'   => [ '$eq' => [ '$alert_status', 'Green Driving' ]],
                             'then' => '$score',
                             'else' =>  0
                         ]
@@ -468,6 +468,7 @@ class ReportController extends BaseController
                         'vehicle_number'    => ['$first' => '$vehicle_number'],
                         'machine_number'    => ['$first' => '$machine_number'],
                         'created_at'        => ['$first' => '$created_at'],
+                        'branch'            => ['$first' => '$branch'],
                         'address'           => ['$last'  => '$last_location'],
                         'duration_out_zone' => ['$sum'   => '$duration_out_zone'],
                         'duration_in_zone'  => ['$sum'   => '$duration_in_zone']
@@ -489,7 +490,7 @@ class ReportController extends BaseController
                                 'else' => ['$sum'   => '$duration_in_zone'],
                             ]
                         ],
-                        // 'geofence_area'  => 'Ambil dari mana nih?' //ini darimana?
+                        'geofence_area'  => '$branch'
                     )
                 ],
                 [
@@ -510,6 +511,9 @@ class ReportController extends BaseController
             if($request->has('license_plate') && !empty($request->license_plate)){
               $search['$match']['license_plate'] = $request->license_plate;
             }
+            if($request->has('category_over_speed') && !empty($request->category_over_speed)){
+                $search['$match']['category_over_speed'] = $request->category_over_speed;
+              }
             
             if($request->has('startDate') || $request->has('endDate')){
                $created_at = [];
@@ -563,9 +567,7 @@ class ReportController extends BaseController
             $query = [
             [
                 '$project' => array(
-                    'geofence_area'  => [
-                        '$ifNull' => [ null, "ambil dari mana" ] //ambil dari mana?
-                    ],
+                    'geofence_area'  => '$branch',
                     'poi'            => [
                         '$ifNull' => [ null, "ambil dari mana" ] //ambil dari mana?
                     ],
