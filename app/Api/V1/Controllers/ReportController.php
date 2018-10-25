@@ -30,10 +30,9 @@ class ReportController extends BaseController
     }
 
     public function reportDriverScore(Request $request){
-        // $this->filters($request);
         $data = RptDriverScoring::raw(function($collection) use ($request)
         {  
-            $search['$match']['alert_status'] = ['$in' => ['Overspeed','Signal Jamming','Out Of Zone']];
+            $search['$match']['alert_status'] = ['$in' => ['Overspeed','Signal Jamming','Out Of Zone', 'Green Driving', 'Crash', 'Unplug']];
             if($request->has('license_plate') && !empty($request->license_plate)){
               $search['$match']['license_plate'] = $request->license_plate;
             }
@@ -58,23 +57,38 @@ class ReportController extends BaseController
                             'else' =>  0
                         ]
                     ],
-                    'harsh_acceleration' => [ //confirm
+                    'harsh_acceleration' => [ //eco_driving_type = 1
                         '$cond' => [
-                            'if'   => [ '$eq' => [ '$alert_status', 'Green Driving' ]],
+                            'if'   => [ 
+                                '$and' => [
+                                    ['$eq' => [ '$alert_status', 'Green Driving' ]],
+                                    ['$eq' => [ '$eco_driving_type', '1' ]],
+                                ] 
+                            ],
                             'then' => '$score',
                             'else' =>  0
                         ]
                     ],
-                    'harsh_braking' => [ //confirm
+                    'harsh_braking' => [ //eco_driving_type = 2
                         '$cond' => [
-                            'if'   => [ '$eq' => [ '$alert_status', 'Overspeed' ]],
+                            'if'   => [ 
+                                '$and' => [
+                                    ['$eq' => [ '$alert_status', 'Green Driving' ]],
+                                    ['$eq' => [ '$eco_driving_type', '2' ]],
+                                ]
+                            ],
                             'then' => '$score',
                             'else' =>  0
                         ]
                     ],
-                    'harsh_cornering' => [ //confirm
+                    'harsh_cornering' => [ //eco_driving_type = 3
                         '$cond' => [
-                            'if'   => [ '$eq' => [ '$alert_status', 'Overspeed' ]],
+                            'if'   => [ 
+                                '$and' => [
+                                    ['$eq' => [ '$alert_status', 'Green Driving' ]],
+                                    ['$eq' => [ '$eco_driving_type', '3' ]],
+                                ]
+                            ],
                             'then' => '$score',
                             'else' =>  0
                         ]
@@ -93,14 +107,14 @@ class ReportController extends BaseController
                             'else' =>  0
                         ]
                     ],
-                    'bump_detection' => [ //confirm
+                    'bump_detection' => [
                         '$cond' => [
-                            'if'   => [ '$eq' => [ '$alert_status', 'Overspeed' ]],
+                            'if'   => [ '$eq' => [ '$alert_status', 'Crash' ]],
                             'then' => '$score',
                             'else' =>  0
                         ]
                     ],
-                    'out_of_zone' => [
+                    'out_of_zone' => [ //confirm
                         '$cond' => [
                             'if'   => [ '$eq' => [ '$alert_status', 'Out Of Zone' ]],
                             'then' => '$score',
@@ -127,6 +141,8 @@ class ReportController extends BaseController
             ]];
             return $collection->aggregate(array_merge([$search], $query));
         });
+
+        
         return $this->makeResponse(200, 1, null, $data);
     }
 

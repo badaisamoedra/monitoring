@@ -253,7 +253,7 @@ class MappingController extends BaseController
             if(isset($mongoMsEventRelated['notif_detail']) && !empty($mongoMsEventRelated['notif_detail'])){
                 $notif = explode(',', $mongoMsEventRelated['notif_detail']['notification_code']);
                 if(in_array('NTF-0001', $notif)) 
-                    // Helpers::sendTelegram(self::$temp);
+                    Helpers::sendTelegram(self::$temp);
             }
         }else{ 
             self::$temp['alert_status'] = null;
