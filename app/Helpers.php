@@ -376,7 +376,7 @@ Class Helpers{
         $txt .="Waktu : ".Carbon::parse($param['device_time'])->format('Y-m-d H:i:s')." | ";
         $txt .="Alert : ".$param['alert_status']." | ";
         $txt .="Lokasi : ".$param['last_location']." | ";
-        $txt .= "https://www.google.co.id/maps/place/".$param['longitude'].",".$param['latitude'];
+        $txt .= "https://www.google.co.id/maps/place/".$param['latitude'].",".$param['longitude'];
         
         $telegram = new Telegram($token);
         $telegram->sendMessage($chatId, $txt, 'HTML');
