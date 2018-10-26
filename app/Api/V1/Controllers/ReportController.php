@@ -121,20 +121,20 @@ class ReportController extends BaseController
                             'else' =>  0
                         ]
                     ],   
-                    'immobilizer' => [ //confirm
-                        '$cond' => [
-                            'if'   => [ '$eq' => [ '$alert_status', 'Overspeed' ]],
-                            'then' => '$score',
-                            'else' =>  0
-                        ]
-                    ],       
-                    'un_immobilizer' => [ //confirm
-                        '$cond' => [
-                            'if'   => [ '$eq' => [ '$alert_status', 'Overspeed' ]],
-                            'then' => '$score',
-                            'else' =>  0
-                        ]
-                    ], 
+                    // 'immobilizer' => [ //confirm
+                    //     '$cond' => [
+                    //         'if'   => [ '$eq' => [ '$alert_status', 'Overspeed' ]],
+                    //         'then' => '$score',
+                    //         'else' =>  0
+                    //     ]
+                    // ],       
+                    // 'un_immobilizer' => [ //confirm
+                    //     '$cond' => [
+                    //         'if'   => [ '$eq' => [ '$alert_status', 'Overspeed' ]],
+                    //         'then' => '$score',
+                    //         'else' =>  0
+                    //     ]
+                    // ], 
                     'alert_status'   => '$alert_status',
                     'total'          => '$score',
                 )
@@ -169,18 +169,18 @@ class ReportController extends BaseController
                 [
                     '$group' => array(
                         '_id' => '$imei',
-                        'license_plate'  => ['$first' => '$license_plate'],
-                        'vehicle_number' => ['$first' => '$vehicle_number'],
-                        'machine_number' => ['$first' => '$machine_number'],
-                        'total_data'     => ['$sum'   => 1],
-                        'park_time'      => ['$sum'   => '$park_time'],
-                        'moving_time'    => ['$sum'   => '$moving_time'],
-                        'idle_time'      => ['$sum'   => '$idle_time'],
-                        'engine_on_time' => ['$sum'   => '$engine_on_time'],
-                        'total_mileage'  => ['$sum'   => '$total_odometer'],
-                        'speed'          => ['$sum'   => '$speed'],
-                        'fuel'           => ['$sum'   => 'fuel_consumed'],
-                        'duration_out_zone' => ['$sum' => '$duration_out_zone'],
+                        'license_plate'     => ['$first' => '$license_plate'],
+                        'vehicle_number'    => ['$first' => '$vehicle_number'],
+                        'machine_number'    => ['$first' => '$machine_number'],
+                        'total_data'        => ['$sum'   => 1],
+                        'park_time'         => ['$sum'   => '$park_time'],
+                        'moving_time'       => ['$sum'   => '$moving_time'],
+                        'idle_time'         => ['$sum'   => '$idle_time'],
+                        'engine_on_time'    => ['$sum'   => '$engine_on_time'],
+                        'total_mileage'     => ['$sum'   => '$total_odometer'],
+                        'speed'             => ['$sum'   => '$speed'],
+                        'fuel'              => ['$sum'   => 'fuel_consumed'],
+                        'duration_out_zone' => ['$sum'   => '$duration_out_zone'],
                     )
                 ]
                 ,[
@@ -420,7 +420,9 @@ class ReportController extends BaseController
             $msAlert = [];
             $msEventRelated = MongoMasterEventRelated::whereNotNull('notification_code')->get()->toArray();
             if(!empty($msEventRelated)){
-                foreach($msEventRelated as $msAlert) $msAlert[] = $msAlert['alert_name'];
+                foreach($msEventRelated as $alert){
+                    $msAlert[] = $alert['alert_name'];
+                }
                 if(!empty($msAlert)) $search['$match']['alert_status'] = ['$in' => $msAlert];
             }
             
@@ -459,7 +461,7 @@ class ReportController extends BaseController
         $this->filters($request);
         $data = MwMappingHistory::raw(function($collection) use ($request)
         {
-            $search['$match'] = [];
+            $search['$match']['is_out_zone'] = ['$in' => [true , false]];
             if($request->has('license_plate') && !empty($request->license_plate)){
               $search['$match']['license_plate'] = $request->license_plate;
             }
@@ -510,7 +512,7 @@ class ReportController extends BaseController
                     )
                 ],
                 [
-                    '$sort' => ['created_at' => -1]
+                    '$sort' => ['license_plate' => -1]
                 ]      
             ];
 
