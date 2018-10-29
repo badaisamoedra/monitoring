@@ -214,16 +214,12 @@ class ReportController extends BaseController
             $data = MongoGpsNotUpdateOneDay::raw(function($collection) use ($request)
             {
                 $search['$match'] = [];
-                if($request->has('license_plate') && !empty($request->license_plate)){
-                  $search['$match']['license_plate'] = $request->license_plate;
-                }
-                
                 if($request->has('startDate') || $request->has('endDate')){
                    $last_update = [];
                    $gte = $request->has('startDate') ? $request->startDate : '';
                    $lte = $request->has('endDate') ? $request->endDate : '';
-                   if(!empty($gte)) $last_update['$gte'] = new \MongoDB\BSON\UTCDatetime(strtotime($gte)*1000);
-                   if(!empty($lte)) $last_update['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
+                   if(!empty($gte)) $last_update['$gte'] = $gte;
+                   if(!empty($lte)) $last_update['$lte'] = $lte;
                    if(!empty($last_update)) $search['$match']['last_update'] = $last_update;
                 }
                 
@@ -256,16 +252,12 @@ class ReportController extends BaseController
              $data = MongoGpsNotUpdateThreeDay::raw(function($collection) use ($request)
              {
                  $search['$match'] = [];
-                 if($request->has('license_plate') && !empty($request->license_plate)){
-                   $search['$match']['license_plate'] = $request->license_plate;
-                 }
-                 
                  if($request->has('startDate') || $request->has('endDate')){
                     $last_update = [];
                     $gte = $request->has('startDate') ? $request->startDate : '';
                     $lte = $request->has('endDate') ? $request->endDate : '';
-                    if(!empty($gte)) $last_update['$gte'] = new \MongoDB\BSON\UTCDatetime(strtotime($gte)*1000);
-                    if(!empty($lte)) $last_update['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
+                    if(!empty($gte)) $last_update['$gte'] = $gte;
+                    if(!empty($lte)) $last_update['$lte'] = $lte;
                     if(!empty($last_update)) $search['$match']['last_update'] = $last_update;
                  }
                  
@@ -289,7 +281,6 @@ class ReportController extends BaseController
                          '$sort' => ['last_update' => -1]
                      ]
                  ];
-     
                  return $collection->aggregate(array_merge([$search], $query));
              });
         }
