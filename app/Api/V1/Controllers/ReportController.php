@@ -8,6 +8,8 @@ use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
 use App\Models\MwMappingHistory;
 use App\Models\RptDriverScoring;
 use App\Models\MongoMasterEventRelated;
+use App\Models\MongoGpsNotUpdateOneDay;
+use App\Models\MongoGpsNotUpdateThreeDay;
 use Carbon\Carbon;
 use Auth;
 
@@ -30,9 +32,18 @@ class ReportController extends BaseController
     }
 
     public function reportDriverScore(Request $request){
+        $x = true;
+
         $data = RptDriverScoring::raw(function($collection) use ($request)
         {  
-            $search['$match']['alert_status'] = ['$in' => ['Overspeed','Signal Jamming','Out Of Zone', 'Green Driving', 'Crash', 'Unplug']];
+            $search['$match']['$or'] = [
+                ['alert_status' => [
+                    '$in' => ['Overspeed','Signal Jamming','Out Of Zone', 'Green Driving', 'Crash', 'Unplug']
+                ]],
+                ['is_out_zone' => [
+                    '$eq' => ['is_out_zone', '1']
+                ]]
+            ];
             if($request->has('license_plate') && !empty($request->license_plate)){
               $search['$match']['license_plate'] = $request->license_plate;
             }
@@ -116,25 +127,11 @@ class ReportController extends BaseController
                     ],
                     'out_of_zone' => [ //confirm
                         '$cond' => [
-                            'if'   => [ '$eq' => [ '$alert_status', 'Out Of Zone' ]],
-                            'then' => '$score',
+                            'if'   => [ '$eq' => [ '$is_out_zone', 'true' ]],
+                            'then' => '1',
                             'else' =>  0
                         ]
                     ],   
-                    // 'immobilizer' => [ //confirm
-                    //     '$cond' => [
-                    //         'if'   => [ '$eq' => [ '$alert_status', 'Overspeed' ]],
-                    //         'then' => '$score',
-                    //         'else' =>  0
-                    //     ]
-                    // ],       
-                    // 'un_immobilizer' => [ //confirm
-                    //     '$cond' => [
-                    //         'if'   => [ '$eq' => [ '$alert_status', 'Overspeed' ]],
-                    //         'then' => '$score',
-                    //         'else' =>  0
-                    //     ]
-                    // ], 
                     'alert_status'   => '$alert_status',
                     'total'          => '$score',
                 )
@@ -212,59 +209,91 @@ class ReportController extends BaseController
     }
 
     public function reportGpsNotUpdate(Request $request){
-        $this->filters($request);
-        $data = MwMappingHistory::raw(function($collection) use ($request)
-        {
-            $search['$match'] = [];
-            if($request->has('license_plate') && !empty($request->license_plate)){
-              $search['$match']['license_plate'] = $request->license_plate;
-            }
-
-            if($request->has('kategori') && !empty($request->kategori)){
-                if($request->kategori == 1){
-                    // not update <= 1 day
-
-                }else{
-                    // not update > 3 days
+        if($request->kategori == 1){
+            // not update <= 1 day
+            $data = MongoGpsNotUpdateOneDay::raw(function($collection) use ($request)
+            {
+                $search['$match'] = [];
+                if($request->has('license_plate') && !empty($request->license_plate)){
+                  $search['$match']['license_plate'] = $request->license_plate;
                 }
-                // $search['$match']['kategori'] = $request->kategori;
-              }
-            
-            if($request->has('startDate') || $request->has('endDate')){
-               $created_at = [];
-               $gte = $request->has('startDate') ? $request->startDate : '';
-               $lte = $request->has('endDate') ? $request->endDate : '';
-               if(!empty($gte)) $created_at['$gte'] = new \MongoDB\BSON\UTCDatetime(strtotime($gte)*1000);
-               if(!empty($lte)) $created_at['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
-               if(!empty($created_at)) $search['$match']['created_at'] = $created_at;
-            }
-            
-            $query = [
-                [
-                    '$project' => array(
-                        'gps_supplier'   => [
-                            '$ifNull' => ['$gps_supplier', "PT Blue Chip Transland / Teltonika"]
-                        ],
-                        'branch'   => [
-                            '$ifNull' => [ '$branch', null ]
-                        ],
-                        'license_plate'  => '$license_plate',
-                        'imei'           => '$imei',
-                        'vin'            => '$vehicle_number',
-                        'install_date'   => '$date_installation',
-                        'created_at'     => '$created_at',
-                        'last_location'  => '$last_location',
-                        'gps_satellite'  => '$satellite',
-                        'gsm_signal'     => '$gsm_signal_level',
-                    )
-                ],
-                [
-                    '$sort' => ['created_at' => -1]
-                ]
-            ];
+                
+                if($request->has('startDate') || $request->has('endDate')){
+                   $last_update = [];
+                   $gte = $request->has('startDate') ? $request->startDate : '';
+                   $lte = $request->has('endDate') ? $request->endDate : '';
+                   if(!empty($gte)) $last_update['$gte'] = new \MongoDB\BSON\UTCDatetime(strtotime($gte)*1000);
+                   if(!empty($lte)) $last_update['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
+                   if(!empty($last_update)) $search['$match']['last_update'] = $last_update;
+                }
+                
+                $query = [
+                    [
+                        '$project' => array(
+                            'category'       => '$category',
+                            'gps_supplier'   => '$gps_supplier',
+                            'branch'         => '$branch',
+                            'license_plate'  => '$license_plate',
+                            'imei'           => '$imei',
+                            'vin'            => '$vehicle_number',
+                            'install_date'   => '$date_installation',
+                            'last_update'    => '$last_update',
+                            'last_location'  => '$last_location',
+                            'gps_satellite'  => '$satellite',
+                            'gsm_signal'     => '$gsm_signal_level',
+                        )
+                    ],
+                    [
+                        '$sort' => ['last_update' => -1]
+                    ]
+                ];
+    
+                return $collection->aggregate(array_merge([$search], $query));
+            });
 
-            return $collection->aggregate(array_merge([$search], $query));
-        });
+        }else{
+            // not update > 3 days
+             $data = MongoGpsNotUpdateThreeDay::raw(function($collection) use ($request)
+             {
+                 $search['$match'] = [];
+                 if($request->has('license_plate') && !empty($request->license_plate)){
+                   $search['$match']['license_plate'] = $request->license_plate;
+                 }
+                 
+                 if($request->has('startDate') || $request->has('endDate')){
+                    $last_update = [];
+                    $gte = $request->has('startDate') ? $request->startDate : '';
+                    $lte = $request->has('endDate') ? $request->endDate : '';
+                    if(!empty($gte)) $last_update['$gte'] = new \MongoDB\BSON\UTCDatetime(strtotime($gte)*1000);
+                    if(!empty($lte)) $last_update['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
+                    if(!empty($last_update)) $search['$match']['last_update'] = $last_update;
+                 }
+                 
+                 $query = [
+                     [
+                         '$project' => array(
+                             'category'       => '$category',
+                             'gps_supplier'   => '$gps_supplier',
+                             'branch'         => '$branch',
+                             'license_plate'  => '$license_plate',
+                             'imei'           => '$imei',
+                             'vin'            => '$vehicle_number',
+                             'install_date'   => '$date_installation',
+                             'last_update'    => '$last_update',
+                             'last_location'  => '$last_location',
+                             'gps_satellite'  => '$satellite',
+                             'gsm_signal'     => '$gsm_signal_level',
+                         )
+                     ],
+                     [
+                         '$sort' => ['last_update' => -1]
+                     ]
+                 ];
+     
+                 return $collection->aggregate(array_merge([$search], $query));
+             });
+        }
+       
         return $this->makeResponse(200, 1, null, $data);
     }
 
@@ -585,9 +614,11 @@ class ReportController extends BaseController
             $query = [
             [
                 '$project' => array(
-                    'geofence_area'  => '$branch',
+                    'geofence_area'  => [
+                        '$ifNull' => [ null, '$geofence_area' ]
+                    ],
                     'poi'            => [
-                        '$ifNull' => [ null, "ambil dari mana" ] //ambil dari mana?
+                        '$ifNull' => [ null, '$poi' ]
                     ],
                     'created_at'     => '$created_at',
                     'license_plate'  => '$license_plate',

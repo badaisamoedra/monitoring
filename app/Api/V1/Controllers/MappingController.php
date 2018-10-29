@@ -151,7 +151,7 @@ class MappingController extends BaseController
             
             // additional field
             self::getAddress($request->all());
-            self::vehicleStatus($request->all());
+            self::vehicleStatus($request->all(), $vehicle);die();
             self::alertStatus($request->all());
             self::checkZone($vehicle, $mapping, $request->all());
             self::bestDriver($vehicle, $request->all());
@@ -194,7 +194,7 @@ class MappingController extends BaseController
        
     }
 
-    private function vehicleStatus($param){
+    private function vehicleStatus($param, $vehicle){
         if($param['ignition'] == 1) {
             if($param['ignition'] == 1 && $param['speed'] > 0) {
                 self::$temp['vehicle_status'] = 'Moving';
@@ -221,8 +221,25 @@ class MappingController extends BaseController
         if($param['event_type'] == 'MB_CN'){
             self::$temp['vehicle_status'] = 'Unplugged';
             //set poi
+            $zoneName = null;
+            $point    = array(self::$temp['latitude'], self::$temp['longitude']);
+            if(isset($vehicle['vehicle']['zone']) && !empty($vehicle['vehicle']['zone'])){
+                foreach($vehicle['vehicle']['zone'] as $zone){
+                    if(!empty($zone) && ($zone['type_zone'] == 'POOL')){
+                        foreach($zone['zone_detail'] as $detail){
+                            $polygon[] = [$detail['latitude'], $detail['longitude']];
+                        }
+                        if($this->checkPolygon($point, $polygon)){
+                            //set zone name
+                            $zoneName = $zone['zone_name'];
+                            break;
+                        }
+                    }
+                }
+            }
+            self::$temp['poi'] = $zoneName;
         }
-        
+
         // get vehicle status color
         if(isset(self::$temp['vehicle_status'])){
             $msStatusVehicle = MongoMasterStatusVehicle::where('status_vehicle_name', self::$temp['vehicle_status'])->first();
@@ -284,23 +301,28 @@ class MappingController extends BaseController
     }
 
     private function checkZone($vehicle, $mapping, $param){
+        
         $polygon = [];
         $now = Carbon::now();
         $deviceTime = Carbon::parse($param['device_time']);
-
+        $point      = array($param['latitude'], $param['longitude']);
+        $zoneName   = null;
         if(isset($vehicle['vehicle']['zone']) && !empty($vehicle['vehicle']['zone'])){
             foreach($vehicle['vehicle']['zone'] as $zone){
-                if(!empty($zone)) foreach($zone['zone_detail'] as $detail){
-                    $polygon[] = [$detail['latitude'], $detail['longitude']];
+                if(!empty($zone) && ($zone['type_zone'] == 'OUT')){
+                    $zoneName = $zone['zone_name'];
+                    foreach($zone['zone_detail'] as $detail){
+                        $polygon[] = [$detail['latitude'], $detail['longitude']];
+                    }
                 }
             }
         }
-
-       $point = array($param['latitude'], $param['longitude']);
        if($this->checkPolygon($point, $polygon)){
+         self::$temp['zone_name'] = $zoneName;
          self::$temp['is_out_zone'] = FALSE;
          self::$temp['duration_in_zone']  = $now->diffInMinutes($deviceTime);
        }else{
+         self::$temp['zone_name'] = $zoneName;
          self::$temp['is_out_zone'] = TRUE;
          self::$temp['duration_out_zone'] = $now->diffInMinutes($deviceTime);
        }
@@ -367,19 +389,21 @@ class MappingController extends BaseController
        
 
         //insert to rpt_driver_scoring
-        self::driverScoring($vehicle, $data);
+        self::driverScoring($vehicle, $score);
         
         return $bestDriver;
     }
 
-    public function driverScoring($vehicle, $data){
+    public function driverScoring($vehicle, $score){
          $data = [
             'driver_code'      => $vehicle['driver']['driver_code'],
             'driver_name'      => $vehicle['driver']['name'],
+            'license_plate'    => self::$temp['license_plate'],
             'alert_status'     => self::$temp['alert_status'],
             'eco_driving_type' => self::$temp['eco_driving_type'],
-            'score'            => $data['score'],
-            'license_plate'    => $data['license_plate'],
+            'is_out_zone'      => (bool) self::$temp['is_out_zone'],
+            'score'            => $score,
+            
         ];
 
         $driverScoring = RptDriverScoring::create($data);
