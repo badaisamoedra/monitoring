@@ -209,7 +209,7 @@ class ReportController extends BaseController
     }
 
     public function reportGpsNotUpdate(Request $request){
-        if($request->kategori == 1){
+        if($request->category == 1){
             // not update <= 1 day
             $data = MongoGpsNotUpdateOneDay::raw(function($collection) use ($request)
             {
