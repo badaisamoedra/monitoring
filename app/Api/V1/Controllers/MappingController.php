@@ -87,8 +87,8 @@ class MappingController extends BaseController
                 'pto_state'                => $request->pto_state,
                 'engine_total_fuel_used'   => $request->engine_total_fuel_used,
                 'fuel_level_1_x'           => $request->fuel_level_1_x,
-                'server_time'              => $request->server_time,
-                'device_time'              => $request->device_time,
+                'server_time'              => Carbon::parse($request->server_time)->format('Y-m-d H:i:s'),
+                'device_time'              => Carbon::parse($request->device_time)->format('Y-m-d H:i:s'),
                 'device_timestamp'         => $request->device_timestamp,
                 'engine_total_hours_of_operation_x' => $request->engine_total_hours_of_operation_x,
                 'service_distance'         => $request->service_distance,
@@ -151,7 +151,7 @@ class MappingController extends BaseController
             
             // additional field
             self::getAddress($request->all());
-            self::vehicleStatus($request->all(), $vehicle);die();
+            self::vehicleStatus($request->all(), $vehicle);
             self::alertStatus($request->all());
             self::checkZone($vehicle, $mapping, $request->all());
             self::bestDriver($vehicle, $request->all());

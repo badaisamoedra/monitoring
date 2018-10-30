@@ -22,6 +22,6 @@ class MwMapping extends Eloquent {
     //     'dallas_id_4','event','event_type_id','event_type','telemetry','reff_id'
     // ];
     protected $guarded = ['id'];
-    // protected $dates   = ['created_at', 'updated_at'];
+    protected $dates   = ['device_time', 'server_time', 'created_at', 'updated_at'];
 
 }

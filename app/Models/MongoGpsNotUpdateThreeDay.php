@@ -11,6 +11,6 @@ class MongoGpsNotUpdateThreeDay extends Eloquent {
     protected $collection = 'gps_not_update_three_day';
 
     protected $guarded = ['id'];
-    protected $dates   = ['created_at', 'updated_at'];
+    protected $dates   = ['device_time', 'server_time', 'created_at', 'updated_at'];
 
 }

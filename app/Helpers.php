@@ -269,33 +269,32 @@ Class Helpers{
 
         
         //************************************* showGPSnotUpdatedOneDay ****************************************//
-        $max24hours = Carbon::now()->subHours(24);
-        $max72hours = Carbon::now()->subHours(72);
-        $showGPSnotUpdatedOneDay = MwMapping::where('updated_at', '>=', $max24hours)
-                                                      ->where('updated_at', '<', $max72hours)
-                                                      ->orderBy('updated_at', 'desc')
-                                                      ->take(10)->get()->toArray();
+        $max72hours = new \MongoDB\BSON\UTCDatetime(strtotime(Carbon::now()->subHours(72))*1000);
+		$max24hours = new \MongoDB\BSON\UTCDatetime(strtotime(Carbon::now()->subHours(24))*1000);
+        $showGPSnotUpdatedOneDay = MwMapping::whereBetween('device_time', [$max72hours, $max24hours])
+                                                    ->orderBy('device_time', 'desc')
+                                                    ->take(10)->get()->toArray();
 
         if(!empty($showGPSnotUpdatedOneDay)) foreach($showGPSnotUpdatedOneDay as $val){
             $result['showGPSnotUpdatedOneDay'][] = [
                                                     'license_plate' => $val['license_plate'],
-                                                    'last_updated' => $val['updated_at'],
-                                                    'duration' => Carbon::parse($val['updated_at'])->diffForHumans()
+                                                    'last_updated'  => $val['device_time'],
+                                                    'duration' => Carbon::parse($val['device_time'])->diffForHumans()
             ];
         }
         
 
         //*********************************** showGPSnotUpdatedThreeDay start ***********************************//
-        $threeDaysAgo = Carbon::now()->subDays(3);
-        $showGPSnotUpdatedThreeDay = MwMapping::where('updated_at', '<=', $threeDaysAgo)
-                                                        ->orderBy('updated_at', 'desc')
+        $threeDaysAgo = new \MongoDB\BSON\UTCDatetime(strtotime(Carbon::now()->subDays(3))*1000);
+        $showGPSnotUpdatedThreeDay = MwMapping::where('device_time', '<', $threeDaysAgo)
+                                                        ->orderBy('device_time', 'desc')
                                                         ->take(10)->get()->toArray();
 
         if(!empty($showGPSnotUpdatedThreeDay)) foreach($showGPSnotUpdatedThreeDay as $val){
             $result['showGPSnotUpdatedThreeDay'][] = [
                                                     'license_plate' => $val['license_plate'],
-                                                    'last_updated' => $val['updated_at'],
-                                                    'duration' => Carbon::parse($val['updated_at'])->diffForHumans()
+                                                    'last_updated' => $val['device_time'],
+                                                    'duration' => Carbon::parse($val['device_time'])->diffForHumans()
             ];
         }
 

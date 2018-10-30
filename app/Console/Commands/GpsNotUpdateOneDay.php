@@ -35,8 +35,6 @@ class GpsNotUpdateOneDay extends Command
 	public function __construct(GlobalCrudRepo $globalCrudRepo)
 	{
 		parent::__construct();
-		// $this->globalCrudRepo = $globalCrudRepo;
-		// $this->globalCrudRepo->setModel(new MongoGpsNotUpdateOneDay());
 	}
 
 	/**
@@ -47,16 +45,16 @@ class GpsNotUpdateOneDay extends Command
 	public function handle()
 	{
 		try{
-			$max24hours = Carbon::now()->subHours(24);
-			$max72hours = Carbon::now()->subHours(72);
-			$showGPSnotUpdatedOneDay = MwMapping::where('updated_at', '>=', $max72hours)
-														->where('updated_at', '<', $max24hours)
-														->orderBy('updated_at', 'desc')
+			$max72hours = new \MongoDB\BSON\UTCDatetime(strtotime(Carbon::now()->subHours(72))*1000);
+			$max24hours = new \MongoDB\BSON\UTCDatetime(strtotime(Carbon::now()->subHours(24))*1000);
+			$showGPSnotUpdatedOneDay = MwMapping::whereBetween('device_time', [$max72hours, $max24hours])
+														->orderBy('device_time', 'desc')
 														->get()->toArray();
+			$n = 1;
             if(!empty($showGPSnotUpdatedOneDay)) foreach($showGPSnotUpdatedOneDay as $data){
 				//insert to table gps_not_update_one_day
-				$data['category'] 	 = 'Three Days';
-				$data['last_update'] = $data['updated_at'];
+				$data['category'] 	 = 'One Day';
+				$data['last_update'] = $data['device_time'];
 				if(!empty($data) && isset($data['_id'])){
 					unset($data['_id']);
 					unset($data['updated_at']);

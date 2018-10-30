@@ -35,8 +35,6 @@ class GpsNotUpdateThreeDay extends Command
 	public function __construct(GlobalCrudRepo $globalCrudRepo)
 	{
 		parent::__construct();
-		// $this->globalCrudRepo = $globalCrudRepo;
-		// $this->globalCrudRepo->setModel(new MongoGpsNotUpdateThreeDay());
 	}
 
 	/**
@@ -47,15 +45,15 @@ class GpsNotUpdateThreeDay extends Command
 	public function handle()
 	{
 		try{
-			$threeDaysAgo = Carbon::now()->subDays(3);
-			$showGPSnotUpdatedThreeDay = MwMapping::where('updated_at', '>=', $threeDaysAgo)
-															->orderBy('updated_at', 'desc')
+			$threeDaysAgo =  new \MongoDB\BSON\UTCDatetime(strtotime(Carbon::now()->subDays(3))*1000);
+			$showGPSnotUpdatedThreeDay = MwMapping::where('device_time', '<', $threeDaysAgo)
+															->orderBy('device_time', 'desc')
 															->get()->toArray();
 			$n=1;
             if(!empty($showGPSnotUpdatedThreeDay)) foreach($showGPSnotUpdatedThreeDay as $data){
 				//insert to table gps_not_update_three_day
-				$data['category']    = 'One Day';
-				$data['last_update'] = $data['updated_at'];
+				$data['category']    = 'Three Days';
+				$data['last_update'] = $data['device_time'];
 				if(!empty($data) && isset($data['_id'])){
 					unset($data['_id']);
 					unset($data['updated_at']);
