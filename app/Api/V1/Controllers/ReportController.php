@@ -158,7 +158,7 @@ class ReportController extends BaseController
                $lte = $request->has('endDate') ? $request->endDate : '';
                if(!empty($gte)) $created_at['$gte'] = new \MongoDB\BSON\UTCDatetime(strtotime($gte)*1000);
                if(!empty($lte)) $created_at['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
-               if(!empty($created_at)) $search['$match']['created_at'] = $created_at;
+               if(!empty($created_at)) $search['$match']['device_time'] = $created_at;
             }
             $duration = Carbon::parse($request->startDate);
             $duration = (int) $duration->diffInMinutes($request->endDate);
@@ -218,32 +218,31 @@ class ReportController extends BaseController
                    $last_update = [];
                    $gte = $request->has('startDate') ? $request->startDate : '';
                    $lte = $request->has('endDate') ? $request->endDate : '';
-                   if(!empty($gte)) $last_update['$gte'] = $gte;
-                   if(!empty($lte)) $last_update['$lte'] = $lte;
+                   if(!empty($gte)) $last_update['$gte'] = new \MongoDB\BSON\UTCDatetime(strtotime($gte)*1000);
+                   if(!empty($lte)) $last_update['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
                    if(!empty($last_update)) $search['$match']['last_update'] = $last_update;
                 }
                 
                 $query = [
                     [
                         '$project' => array(
-                            'category'       => '$category',
-                            'gps_supplier'   => '$gps_supplier',
-                            'branch'         => '$branch',
-                            'license_plate'  => '$license_plate',
-                            'imei'           => '$imei',
-                            'vin'            => '$vehicle_number',
-                            'install_date'   => '$date_installation',
-                            'last_update'    => '$last_update',
-                            'last_location'  => '$last_location',
-                            'gps_satellite'  => '$satellite',
-                            'gsm_signal'     => '$gsm_signal_level',
+                            'category'          => '$category',
+                            'gps_supplier'      => '$gps_supplier',
+                            'branch'            => '$branch',
+                            'license_plate'     => '$license_plate',
+                            'imei'              => '$imei',
+                            'vin'               => '$vehicle_number',
+                            'date_installation' => '$date_installation',
+                            'last_update'       => '$last_update',
+                            'last_location'     => '$last_location',
+                            'gps_satellite'     => '$satellite',
+                            'gsm_signal'        => '$gsm_signal_level',
                         )
                     ],
                     [
                         '$sort' => ['last_update' => -1]
                     ]
                 ];
-    
                 return $collection->aggregate(array_merge([$search], $query));
             });
 
@@ -256,25 +255,25 @@ class ReportController extends BaseController
                     $last_update = [];
                     $gte = $request->has('startDate') ? $request->startDate : '';
                     $lte = $request->has('endDate') ? $request->endDate : '';
-                    if(!empty($gte)) $last_update['$gte'] = $gte;
-                    if(!empty($lte)) $last_update['$lte'] = $lte;
+                    if(!empty($gte)) $last_update['$gte'] = new \MongoDB\BSON\UTCDatetime(strtotime($gte)*1000);
+                    if(!empty($lte)) $last_update['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
                     if(!empty($last_update)) $search['$match']['last_update'] = $last_update;
                  }
                  
                  $query = [
                      [
                          '$project' => array(
-                             'category'       => '$category',
-                             'gps_supplier'   => '$gps_supplier',
-                             'branch'         => '$branch',
-                             'license_plate'  => '$license_plate',
-                             'imei'           => '$imei',
-                             'vin'            => '$vehicle_number',
-                             'install_date'   => '$date_installation',
-                             'last_update'    => '$last_update',
-                             'last_location'  => '$last_location',
-                             'gps_satellite'  => '$satellite',
-                             'gsm_signal'     => '$gsm_signal_level',
+                             'category'          => '$category',
+                             'gps_supplier'      => '$gps_supplier',
+                             'branch'            => '$branch',
+                             'license_plate'     => '$license_plate',
+                             'imei'              => '$imei',
+                             'vin'               => '$vehicle_number',
+                             'date_installation' => '$date_installation',
+                             'last_update'       => '$last_update',
+                             'last_location'     => '$last_location',
+                             'gps_satellite'     => '$satellite',
+                             'gsm_signal'        => '$gsm_signal_level',
                          )
                      ],
                      [
@@ -303,13 +302,13 @@ class ReportController extends BaseController
                $lte = $request->has('endDate') ? $request->endDate : '';
                if(!empty($gte)) $created_at['$gte'] = new \MongoDB\BSON\UTCDatetime(strtotime($gte)*1000);
                if(!empty($lte)) $created_at['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
-               if(!empty($created_at)) $search['$match']['created_at'] = $created_at;
+               if(!empty($created_at)) $search['$match']['device_time'] = $created_at;
             }
             
             $query = [
                 [
                 '$project' => array(
-                    'date_time'      => '$device_time',
+                    'device_time'    => '$device_time',
                     'license_plate'  => '$license_plate',
                     'engine_status'  => [
                                         '$cond' => [
@@ -349,7 +348,6 @@ class ReportController extends BaseController
                     'accu'           => '$internal_battery_voltage',
                     'gsm_signal'     => '$gsm_signal_level',
                     'address'        => '$last_location',
-                    'created_at'     => '$created_at'
                 )
                 ],
                 [
@@ -376,7 +374,7 @@ class ReportController extends BaseController
                $lte = $request->has('endDate') ? $request->endDate : '';
                if(!empty($gte)) $created_at['$gte'] = new \MongoDB\BSON\UTCDatetime(strtotime($gte)*1000);
                if(!empty($lte)) $created_at['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
-               if(!empty($created_at)) $search['$match']['created_at'] = $created_at;
+               if(!empty($created_at)) $search['$match']['device_time'] = $created_at;
             }
             
             $query = [
@@ -434,7 +432,7 @@ class ReportController extends BaseController
                $lte = $request->has('endDate') ? $request->endDate : '';
                if(!empty($gte)) $created_at['$gte'] = new \MongoDB\BSON\UTCDatetime(strtotime($gte)*1000);
                if(!empty($lte)) $created_at['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
-               if(!empty($created_at)) $search['$match']['created_at'] = $created_at;
+               if(!empty($created_at)) $search['$match']['device_time'] = $created_at;
             }
 
             $msAlert = [];
@@ -449,7 +447,7 @@ class ReportController extends BaseController
             $query = [
                 [
                     '$project' => array(
-                        'created_at'     => '$created_at',
+                        'device_time'    => '$device_time',
                         'license_plate'  => '$license_plate',
                         'engine_status'  => [
                             '$cond' => [
@@ -492,7 +490,7 @@ class ReportController extends BaseController
                $lte = $request->has('endDate') ? $request->endDate : '';
                if(!empty($gte)) $created_at['$gte'] = new \MongoDB\BSON\UTCDatetime(strtotime($gte)*1000);
                if(!empty($lte)) $created_at['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
-               if(!empty($created_at)) $search['$match']['created_at'] = $created_at;
+               if(!empty($created_at)) $search['$match']['device_time'] = $created_at;
             }
 
             $query = [
@@ -505,7 +503,7 @@ class ReportController extends BaseController
                         'license_plate'     => ['$first' => '$license_plate'],
                         'vehicle_number'    => ['$first' => '$vehicle_number'],
                         'machine_number'    => ['$first' => '$machine_number'],
-                        'created_at'        => ['$first' => '$created_at'],
+                        'device_time'       => ['$first' => '$device_time'],
                         'branch'            => ['$first' => '$branch'],
                         'address'           => ['$last'  => '$last_location'],
                         'duration_out_zone' => ['$sum'   => '$duration_out_zone'],
@@ -516,7 +514,7 @@ class ReportController extends BaseController
                     '$project' => array(
                         '_id'            => 0,
                         'license_plate'  => '$license_plate',
-                        'created_at'     => '$created_at',
+                        'device_time'    => '$device_time',
                         'vin'            => '$vehicle_number',
                         'machine_number' => '$machine_number',
                         'address'        => '$address',
@@ -550,7 +548,7 @@ class ReportController extends BaseController
               $search['$match']['license_plate'] = $request->license_plate;
             }
             if($request->has('category_over_speed') && !empty($request->category_over_speed)){
-                $search['$match']['category_over_speed'] = $request->category_over_speed;
+                $search['$match']['category_over_speed'] = trim($request->category_over_speed);
               }
             
             if($request->has('startDate') || $request->has('endDate')){
@@ -559,14 +557,14 @@ class ReportController extends BaseController
                $lte = $request->has('endDate') ? $request->endDate : '';
                if(!empty($gte)) $created_at['$gte'] = new \MongoDB\BSON\UTCDatetime(strtotime($gte)*1000);
                if(!empty($lte)) $created_at['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
-               if(!empty($created_at)) $search['$match']['created_at'] = $created_at;
+               if(!empty($created_at)) $search['$match']['device_time'] = $created_at;
             }
             
             $query = [
                 [
                     '$project' => array(
                         'license_plate'   => '$license_plate',
-                        'created_at'      => '$created_at',
+                        'device_time'     => '$device_time',
                         'vin'             => '$vehicle_number',
                         'machine_number'  => '$machine_number',
                         'address'         => '$last_location',
@@ -576,7 +574,7 @@ class ReportController extends BaseController
                     )
                 ],
                 [
-                    '$sort' => ['created_at' => -1]
+                    '$sort' => ['device_time' => -1]
                 ]
             ];
             return $collection->aggregate(array_merge([$search], $query));
@@ -588,7 +586,7 @@ class ReportController extends BaseController
         $this->filters($request);
         $data = MwMappingHistory::raw(function($collection) use ($request)
         {  
-            $search['$match']['vehicle_status'] = 'Unplugged';
+            $search['$match']['vehicle_status'] = 'Unpluged';
             if($request->has('license_plate') && !empty($request->license_plate)){
               $search['$match']['license_plate'] = $request->license_plate;
             }
@@ -599,7 +597,7 @@ class ReportController extends BaseController
                $lte = $request->has('endDate') ? $request->endDate : '';
                if(!empty($gte)) $created_at['$gte'] = new \MongoDB\BSON\UTCDatetime(strtotime($gte)*1000);
                if(!empty($lte)) $created_at['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
-               if(!empty($created_at)) $search['$match']['created_at'] = $created_at;
+               if(!empty($created_at)) $search['$match']['device_time'] = $created_at;
             }
             
             $query = [
@@ -611,7 +609,7 @@ class ReportController extends BaseController
                     'poi'            => [
                         '$ifNull' => [ null, '$poi' ]
                     ],
-                    'created_at'     => '$created_at',
+                    'device_time'    => '$device_time',
                     'license_plate'  => '$license_plate',
                     'vin'            => '$vehicle_number',
                     'longitude'      => '$longitude',
