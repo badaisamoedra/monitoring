@@ -146,7 +146,8 @@ class MappingController extends BaseController
                 'category_over_speed'      => null,
                 'is_out_zone'              => false,
                 'duration_out_zone'        => 0,
-                'duration_in_zone'         => 0
+                'duration_in_zone'         => 0,
+                'black_box'                => false
             ];
             
             // additional field
@@ -219,7 +220,7 @@ class MappingController extends BaseController
         }
             
         if($param['event_type'] == 'MB_CN'){
-            self::$temp['vehicle_status'] = 'Unplugged';
+            self::$temp['vehicle_status'] = 'Unpluged';
             //set poi
             $zoneName = null;
             $point    = array(self::$temp['latitude'], self::$temp['longitude']);

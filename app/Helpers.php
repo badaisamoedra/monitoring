@@ -380,4 +380,11 @@ Class Helpers{
         $telegram = new Telegram($token);
         $telegram->sendMessage($chatId, $txt, 'HTML');
     }
+
+    public static function bsonToString($bsonDate){
+        $date = (string) $bsonDate;
+        $utcdatetime = new \MongoDB\BSON\UTCDateTime($date);
+        $datetime = $utcdatetime->toDateTime();
+        return  $datetime->format('Y-m-d H:i:s');
+    }
 }

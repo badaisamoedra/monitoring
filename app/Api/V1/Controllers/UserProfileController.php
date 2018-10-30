@@ -20,7 +20,7 @@ class UserProfileController extends BaseController
 
     public function index()
     {
-        $data = $this->globalCrudRepo->all();
+        $data = $this->globalCrudRepo->all(['role']);
         return $this->makeResponse(200, 1, null, $data);
     }
 

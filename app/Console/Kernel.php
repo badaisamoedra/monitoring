@@ -19,7 +19,8 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\SyncMasterStatusVehicle',
         'App\Console\Commands\GpsNotUpdateOneDay',
         'App\Console\Commands\GpsNotUpdateThreeDay',
-        'App\Console\Commands\SyncIntegration',
+        'App\Console\Commands\GpsNotUpdateThreeDay',
+        'App\Console\Commands\SyncBlackBox',
     ];
 
     /**
@@ -36,6 +37,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('master_status_vehicle:sync')->everyFiveMinutes();
         $schedule->command('gps_not_update_one_day:sync')->hourly();
         $schedule->command('gps_not_update_three_day:sync')->hourly();
+        $schedule->command('get_black_box:sync')->hourly();
         $schedule->command('log_integration:sync')->cron('0 */2 * * *'); // every 2 hours
     }
 }
