@@ -154,7 +154,7 @@ class MappingController extends BaseController
             self::getAddress($request->all());
             self::vehicleStatus($request->all(), $vehicle);
             self::alertStatus($request->all());
-            self::checkZone($vehicle, $mapping, $request->all());
+            self::checkZone($vehicle, $request->all());
             self::bestDriver($vehicle, $request->all());
            
             // if data empty then do insert, if not empty do update
@@ -301,7 +301,7 @@ class MappingController extends BaseController
         }
     }
 
-    private function checkZone($vehicle, $mapping, $param){
+    private function checkZone($vehicle, $param){
         
         $polygon = [];
         $now = Carbon::now();

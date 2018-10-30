@@ -51,16 +51,21 @@ class GpsNotUpdateThreeDay extends Command
 															->get()->toArray();
 			$n=1;
             if(!empty($showGPSnotUpdatedThreeDay)) foreach($showGPSnotUpdatedThreeDay as $data){
-				//insert to table gps_not_update_three_day
-				$data['category']    = 'Three Days';
-				$data['last_update'] = $data['device_time'];
-				if(!empty($data) && isset($data['_id'])){
-					unset($data['_id']);
-					unset($data['updated_at']);
-					unset($data['created_at']);
-				} 
-				MongoGpsNotUpdateThreeDay::create($data);
-				echo $n++."\n";
+				$checkDuplicate = MongoGpsNotUpdateThreeDay::where('imei', $data['imei'])
+														 ->where('last_update', new \MongoDB\BSON\UTCDatetime(strtotime($data['device_time'])*1000))
+														 ->first();
+				if(empty($checkDuplicate)){										 
+					//insert to table gps_not_update_three_day
+					$data['category']    = 'Three Days';
+					$data['last_update'] = new \MongoDB\BSON\UTCDatetime(strtotime($data['device_time'])*1000);
+					if(!empty($data) && isset($data['_id'])){
+						unset($data['_id']);
+						unset($data['updated_at']);
+						unset($data['created_at']);
+					} 
+					MongoGpsNotUpdateThreeDay::create($data);
+					echo $n++."\n";
+				}
 			}
  		} catch(\Exception $e) {
             print_r($e->getMessage());

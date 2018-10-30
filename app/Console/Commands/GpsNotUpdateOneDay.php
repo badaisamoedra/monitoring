@@ -52,16 +52,21 @@ class GpsNotUpdateOneDay extends Command
 														->get()->toArray();
 			$n = 1;
             if(!empty($showGPSnotUpdatedOneDay)) foreach($showGPSnotUpdatedOneDay as $data){
-				//insert to table gps_not_update_one_day
-				$data['category'] 	 = 'One Day';
-				$data['last_update'] = $data['device_time'];
-				if(!empty($data) && isset($data['_id'])){
-					unset($data['_id']);
-					unset($data['updated_at']);
-					unset($data['created_at']);
-				} 
-				MongoGpsNotUpdateOneDay::create($data);
-				echo $n++."\n";
+				$checkDuplicate = MongoGpsNotUpdateOneDay::where('imei', $data['imei'])
+														 ->where('last_update', new \MongoDB\BSON\UTCDatetime(strtotime($data['device_time'])*1000))
+														 ->first();
+				if(empty($checkDuplicate)){
+					//insert to table gps_not_update_one_day
+					$data['category'] 	 = 'One Day';
+					$data['last_update'] = new \MongoDB\BSON\UTCDatetime(strtotime($data['device_time'])*1000);
+					if(!empty($data) && isset($data['_id'])){
+						unset($data['_id']);
+						unset($data['updated_at']);
+						unset($data['created_at']);
+					} 
+					MongoGpsNotUpdateOneDay::create($data);
+					echo $n++."\n";
+				}
 			}
 		} catch(\Exception $e) {
             print_r($e->getMessage());
