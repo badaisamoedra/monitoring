@@ -67,7 +67,8 @@ class VehicleController extends BaseController
 
     public function show(Request $request, $id)
     {
-        $data = $this->globalCrudRepo->find('license_plate', $id);
+        $license_plate =  str_replace("%20"," ",$id);
+        $data = $this->globalCrudRepo->find('license_plate', $license_plate);
         return $this->makeResponse(200, 1, null, $data);
     }
 
