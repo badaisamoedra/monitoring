@@ -67,7 +67,7 @@ class VehicleController extends BaseController
 
     public function show(Request $request, $id)
     {
-        $data = $this->globalCrudRepo->find('vehicle_code', $id);
+        $data = $this->globalCrudRepo->find('license_plate', $id);
         return $this->makeResponse(200, 1, null, $data);
     }
 
