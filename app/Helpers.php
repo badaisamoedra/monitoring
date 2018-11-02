@@ -332,6 +332,16 @@ Class Helpers{
         return $tracking;
     }
 
+    public static function pushNotificationFormat($param){
+        $txt  ="<strong>Gpstracking:</strong>\n";
+        $txt .="No.Pol : ".$param['license_plate']." | ";
+        $txt .="Waktu : ".Carbon::parse($param['device_time'])->format('Y-m-d H:i:s')." | ";
+        $txt .="Alert : ".$param['alert_status']." | ";
+        $txt .="Lokasi : ".$param['last_location']." | ";
+        $txt .="https://www.google.co.id/maps/place/".$param['latitude'].",".$param['longitude'];
+        return $txt;
+    }
+
     public static function singleTrackingFormat($license_plate = null){
         $tracking = MwMapping::where('license_plate', $license_plate)->first()->toArray();
         return $tracking;

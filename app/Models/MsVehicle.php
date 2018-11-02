@@ -25,6 +25,7 @@ class MsVehicle extends Model {
             'speed_limit',
             'odometer',
             'area_code',
+            'reff_vehicle_id',
             'status'
         ];
 

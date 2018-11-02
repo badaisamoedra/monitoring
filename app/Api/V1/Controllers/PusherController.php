@@ -38,6 +38,11 @@ class PusherController implements WampServerInterface  {
                 'topic' => $topic->getId(),
                 'data'  => Helpers::allTrackingFormat()
             );
+        }elseif($topic->getId() == 'notification'){
+            $pushData = array(
+                'topic' => $topic->getId(),
+                'data'  => 'Hello new subscriber'
+            );
         }else{
             $pushData = array(
                 'topic' => $topic->getId(),
