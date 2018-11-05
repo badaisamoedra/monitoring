@@ -14,7 +14,8 @@
         "mongodb/mongodb": "^1.4",
         "jenssegers/mongodb": "3.3.0",
         "cboden/ratchet": "0.3.*",
-        "react/zmq": "0.3.*"
+        "react/zmq": "0.3.*",
+        "maatwebsite/excel": "~2.1.0"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
