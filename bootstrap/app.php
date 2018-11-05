@@ -93,6 +93,7 @@ $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
 $app->register(Dingo\Api\Provider\LumenServiceProvider::class);
 $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 $app->register(Irazasyed\JwtAuthGuard\JwtAuthGuardServiceProvider::class);
+$app->register(Maatwebsite\Excel\ExcelServiceProvider::class);
 
 /*
 |--------------------------------------------------------------------------
