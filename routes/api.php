@@ -17,7 +17,6 @@ $api->version('v1', function ($api) {
     $api->group(['prefix' => 'auth', 'middleware' => 'cors'], function($api) {
         $api->post('login', 'App\\Api\\V1\\Controllers\\AuthenticateController@login');
         $api->get('refresh', 'App\\Api\\V1\\Controllers\\AuthenticateController@refreshToken');
-        $api->post('export', 'App\\Api\\V1\\Controllers\\MasterAddressController@store');
     });
 
     $api->group(['middleware' => ['cors','auth:api']], function($api) {
@@ -136,6 +135,10 @@ $api->version('v1', function ($api) {
             $api->put('mw-mapping/{id}', 'MappingController@update');
             $api->delete('mw-mapping/{id}', 'MappingController@destroy');
             $api->get('mw-mapping-total', 'MappingController@getTotalVehicleStatus');
+
+            //master address
+            $api->post('export', 'MasterAddressController@store');
+            $api->get('address-detail', 'MasterAddressController@show');
         });
     });
 

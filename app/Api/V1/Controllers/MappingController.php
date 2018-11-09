@@ -17,12 +17,12 @@ use App\Models\MongoMasterVehicleRelated;
 use App\Models\MongoMasterStatusVehicle;
 use App\Models\MongoMasterStatusEvent;
 use App\Models\MongoMasterEventRelated;
+use Illuminate\Support\Facades\Mail;
 use Auth;
 use DB;
 use Carbon\Carbon;
 use \ZMQContext;
 use \ZMQ;
-
 
 class MappingController extends BaseController
 {
@@ -263,7 +263,7 @@ class MappingController extends BaseController
             if($mongoMsEventRelated->alert_name == 'Overspeed'){
                 self::$temp['over_speed_time'] = $this->checkDuration($param);
                 if($param['speed'] >= 80 && $param['speed'] <= 100)
-                    self::$temp['category_over_speed'] = '80 >= 100';
+                    self::$temp['category_over_speed'] = '80 - 100';
                 else 
                     self::$temp['category_over_speed'] = '> 100';
             }
@@ -294,7 +294,7 @@ class MappingController extends BaseController
             // $output = json_decode($geocodeFromLatLong);
             //Get address from json data
             // $address = !empty($output) ? $output->display_name:'';
-            $address = "Limit Get Address Please Buy";
+            $address = null;
             //Return address of the given latitude and longitude
             if(!empty($address))
                self::$temp['last_location'] = $address;
