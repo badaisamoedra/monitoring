@@ -10,6 +10,7 @@ use App\Models\MongoMasterStatusEvent;
 use App\Models\MongoMasterEventRelated;
 use App\Models\MsVehicle;
 use App\Models\BestDriver;
+use Illuminate\Support\Facades\Mail;
 use App\Telegram;
 use Carbon\Carbon;
 use \ZMQContext;
@@ -389,6 +390,24 @@ Class Helpers{
         
         $telegram = new Telegram($token);
         $telegram->sendMessage($chatId, $txt, 'HTML');
+    }
+
+    public static function sendEmail($param){
+        Mail::send('emails.notification', $param, function ($message) use ($param) {
+            $message->from('angger.projects@gmail.com', 'GPS System Notice');
+            $message->to('angger.dayu@gmail.com');
+            $message->subject("GPS System notice --- ".$param['license_plate']." -". $param['alert_status'].".");
+           
+            $path  = base_path().'/public/listmail.json';
+            if(file_exists($path) && !empty(filesize($path))){
+                $broadcast = [];
+                $listBcc   = json_decode(file_get_contents($path));
+                if(!empty($listBcc)) foreach($listBcc as $bc){
+                    $broadcast[] = $bc->email; 
+                }
+                if(!empty($broadcast)) $message->bcc(array_merge($broadcast));
+            }
+        });
     }
 
     public static function bsonToString($bsonDate){

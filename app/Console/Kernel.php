@@ -21,6 +21,7 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\GpsNotUpdateThreeDay',
         'App\Console\Commands\GpsNotUpdateThreeDay',
         'App\Console\Commands\SyncBlackBox',
+        'App\Console\Commands\SyncAddress',
     ];
 
     /**
@@ -38,6 +39,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('gps_not_update_one_day:sync')->hourly();
         $schedule->command('gps_not_update_three_day:sync')->hourly();
         $schedule->command('get_black_box:sync')->daily();
+        $schedule->command('sync_address:sync')->daily();
         $schedule->command('log_integration:sync')->cron('0 */2 * * *'); // every 2 hours
     }
 }
