@@ -63,4 +63,10 @@ class MasterAddressController extends BaseController
         return $this->makeResponse(200, 1, null, $data);
     }
 
+    public function count(Request $request)
+    {
+        $data = MongoMasterAddress::get()->count();
+        return $this->makeResponse(200, 1, null, ['total' => $data]);
+    }
+
 }

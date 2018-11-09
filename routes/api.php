@@ -138,6 +138,7 @@ $api->version('v1', function ($api) {
 
             //master address
             $api->post('export', 'MasterAddressController@store');
+            $api->get('count-address', 'MasterAddressController@count');
             $api->get('address-detail', 'MasterAddressController@show');
         });
     });
