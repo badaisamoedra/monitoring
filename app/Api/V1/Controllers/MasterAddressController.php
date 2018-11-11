@@ -60,6 +60,21 @@ class MasterAddressController extends BaseController
         ]);
         $longlat = $request->longitude.$request->latitude;
         $data = MongoMasterAddress::where('longlat', $longlat)->first();
+        if(empty($data)){
+             //Send request and receive json data by address
+             $geocodeFromLatLong = file_get_contents('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='.$request->latitude.'&lon='. $request->longitude.'&limit=1&email=badai.samoedra@gmail.com'); 
+             $output = json_decode($geocodeFromLatLong);
+             //Get lat, long and address from json data
+             $address   = !empty($output) ? $output->display_name:'';
+             //store to master address
+             MongoMasterAddress::create([
+                                     'latitude'  => $request->latitude,
+                                     'longitude' => $request->longitude,
+                                     'address'   => $address,
+                                     'longlat'   => $longlat 
+                                 ]);
+            $data = MongoMasterAddress::where('longlat', $longlat)->first();
+        }
         return $this->makeResponse(200, 1, null, $data);
     }
 
