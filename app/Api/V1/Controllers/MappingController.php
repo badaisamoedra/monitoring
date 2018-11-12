@@ -17,6 +17,7 @@ use App\Models\MongoMasterVehicleRelated;
 use App\Models\MongoMasterStatusVehicle;
 use App\Models\MongoMasterStatusEvent;
 use App\Models\MongoMasterEventRelated;
+use App\Models\MsStatusAlert;
 use Illuminate\Support\Facades\Mail;
 use Auth;
 use DB;
@@ -414,6 +415,58 @@ class MappingController extends BaseController
 
         $driverScoring = RptDriverScoring::create($data);
         return $driverScoring;
+    }
+
+    public function showAlertStatusDetail(Request $request){
+        $data = [];
+        if($request->has('alertPriority') && !empty($request->alertPriority)){
+            $filter = [
+                'alert_priority' => $request->alertPriority,
+                'alert_status'   => []
+            ];
+            $msStatusAlert = MsStatusAlert::select('status_alert_name')->get()->toArray();
+            if(!empty($msStatusAlert)) foreach($msStatusAlert as $statusAlert){
+                $filter['alert_status'][] = $statusAlert['status_alert_name'];
+            }
+            $data = MwMapping::raw(function($collection) use ($filter)
+                    {
+                        return $collection->aggregate([
+                            [
+                                '$match' => [
+                                    '$and' => [
+                                        ['alert_status'   => ['$in' => $filter['alert_status']]],
+                                        ['alert_priority' => $filter['alert_priority']]
+                                    ]
+                                ]
+                            ],
+                            [
+                                '$project' => array(
+                                    '_id' => 0,
+                                    'alert_status'   => '$alert_status',
+                                )
+                            ],
+                            [
+                                '$group' => array(
+                                    '_id' => [
+                                            'alert_status' => '$alert_status',
+                                        ],
+                                    'total' => [
+                                        '$sum' => 1
+                                    ]
+                                )
+                            ],
+                            [
+                                '$project' => array(
+                                    '_id' => 0,
+                                    'alert_status' => '$_id.alert_status',
+                                    'total' => '$total'
+                                )
+                            ]
+            
+                        ]);
+                    })->toArray();
+        }
+        return $this->makeResponse(200, 1, null, $data);
     }
 
     public function show(Request $request, $id){
