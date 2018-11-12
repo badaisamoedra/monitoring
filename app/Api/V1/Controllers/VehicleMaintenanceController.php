@@ -64,6 +64,8 @@ class VehicleMaintenanceController extends BaseController
             if(!empty($param)){
                 $vehicle = MsVehicle::where('imei_obd_number', $request->imei_obd_number_old)->first();
                 if(!empty($vehicle)){
+                    //set license_plate
+                    $input['license_plate'] = $vehicle->license_plate;
                     MsVehicle::where('vehicle_code', $vehicle->vehicle_code)->update($param);
                     //delete mwmapping
                     if(isset($param['imei_obd_number']) && !empty($param['imei_obd_number'])){
