@@ -16,10 +16,16 @@ class TransactionVehiclePairController extends BaseController
         $this->globalCrudRepo->setModel(new TransactionVehiclePair());
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = $this->globalCrudRepo->all(['vehicle', 'driver']);
-        return $this->makeResponse(200, 1, null, $data);
+        $data = TransactionVehiclePair::with(['vehicle', 'driver']);
+        $license_plate = $request->has('license_plate') ? $request->license_plate : '';
+        if(!empty($license_plate)){
+            $data->whereHas('vehicle', function($q) use ($license_plate){
+                $q->where('license_plate', 'like', '%'.$license_plate.'%');
+            });
+        }
+        return $this->makeResponse(200, 1, null, $data->paginate(MAX_DATA));
     }
 
     public function store(Request $request)

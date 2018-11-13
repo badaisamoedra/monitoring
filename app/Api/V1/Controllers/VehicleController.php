@@ -19,9 +19,14 @@ class VehicleController extends BaseController
         $this->globalCrudRepo->setModel(new MsVehicle());
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = $this->globalCrudRepo->all(['brand','model']);
+        $license_plate = $request->has('license_plate') ? $request->license_plate : '';
+        if(!empty($license_plate))
+            $data = $this->globalCrudRepo->search('license_plate', $request->query('license_plate'), ['brand','model']);
+        else
+            $data = $this->globalCrudRepo->all(['brand','model']);
+        
         return $this->makeResponse(200, 1, null, $data);
     }
 

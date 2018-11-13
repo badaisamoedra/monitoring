@@ -46,7 +46,8 @@ class SyncAddress extends Command
 			ini_set("memory_limit",-1);
 			ini_set('max_execution_time', 0);
 			
-            $getHistory  = MwMappingHistory::where('last_location', null)->get()->toArray();
+			$getHistory  = MwMappingHistory::where('last_location', null)->get()->toArray();
+			$n = 1;
             if(!empty($getHistory)) foreach($getHistory as $hsty){
                 sleep(2);
                 $longlat =  $hsty['longitude'].$hsty['latitude'];
@@ -72,8 +73,11 @@ class SyncAddress extends Command
                 if(!empty($history)){
                     $history->last_location = $address;
                     $history->save();
-                }
-            }
+				}
+				echo $n."\n";
+				$n++;
+			}
+			echo 'Success';
 		} catch(\Exception $e) {
             print_r($e->getMessage());
 		}
