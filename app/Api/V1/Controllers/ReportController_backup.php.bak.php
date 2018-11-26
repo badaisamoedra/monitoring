@@ -178,6 +178,8 @@ class ReportController extends BaseController
                         'speed'             => ['$sum'   => '$speed'],
                         'fuel'              => ['$sum'   => 'fuel_consumed'],
                         'duration_out_zone' => ['$sum'   => '$duration_out_zone'],
+                        'start_date'        => ['$first' => '$device_time'],
+                        'end_date'          => ['$last'  => '$device_time'],
                     )
                 ]
                 ,[
@@ -192,6 +194,9 @@ class ReportController extends BaseController
                         'idle_time'      => '$idle_time',
                         'fuel'           => '$fuel',
                         'engine_on_time' => '$engine_on_time',
+                        'duration'       =>  [
+                            '$ifNull' => [null,$duration]
+                        ],
                         'total_mileage'  => '$total_mileage',
                         'average_speed'  => [
                             '$divide' => [ '$speed', '$total_data']
@@ -199,7 +204,9 @@ class ReportController extends BaseController
                         'rasio_engine_on' => [
                             '$divide' => ['$engine_on_time', $duration]
                         ],
-                        'duration_out_zone' => '$duration_out_zone'
+                        'duration_out_zone' => '$duration_out_zone',
+                        'start_date' => '$start_date',
+                        'end_date' => '$end_date'
                     )
                 ],
             ];
@@ -304,7 +311,7 @@ class ReportController extends BaseController
                if(!empty($lte)) $created_at['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
                if(!empty($created_at)) $search['$match']['device_time'] = $created_at;
             }
-            
+           
             $query = [
                 [
                 '$project' => array(

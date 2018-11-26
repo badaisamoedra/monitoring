@@ -17,12 +17,13 @@ use App\Models\MongoMasterVehicleRelated;
 use App\Models\MongoMasterStatusVehicle;
 use App\Models\MongoMasterStatusEvent;
 use App\Models\MongoMasterEventRelated;
+use App\Models\MsStatusAlert;
+use Illuminate\Support\Facades\Mail;
 use Auth;
 use DB;
 use Carbon\Carbon;
 use \ZMQContext;
 use \ZMQ;
-
 
 class MappingController extends BaseController
 {
@@ -48,8 +49,7 @@ class MappingController extends BaseController
     public function store(Request $request)
     {
         try {
-           
-            // get license plate
+            // get vehicle
             $vehicle = MongoMasterVehicleRelated::where('vehicle.imei_obd_number', $request->imei)->first();
             if(empty($vehicle)){
                 throw new \Exception("Error Processing Request. Cannot define vehicle");	
@@ -58,6 +58,8 @@ class MappingController extends BaseController
             // get detail by imei
             $mapping = $this->globalCrudRepo->find('imei', $request->imei);
             self::$temp = [
+                'gps_supplier'             => 'PT Blue Chip Transland / Teltonika',
+                'branch'                   => $vehicle['vehicle']['area']['area_name'],
                 'device_id'                => $request->device_id,
                 'imei'                     => $request->imei,
                 'device_type'              => $request->device_type,
@@ -86,8 +88,8 @@ class MappingController extends BaseController
                 'pto_state'                => $request->pto_state,
                 'engine_total_fuel_used'   => $request->engine_total_fuel_used,
                 'fuel_level_1_x'           => $request->fuel_level_1_x,
-                'server_time'              => $request->server_time,
-                'device_time'              => $request->device_time,
+                'server_time'              => Carbon::parse($request->server_time)->format('Y-m-d H:i:s'),
+                'device_time'              => Carbon::parse($request->device_time)->format('Y-m-d H:i:s'),
                 'device_timestamp'         => $request->device_timestamp,
                 'engine_total_hours_of_operation_x' => $request->engine_total_hours_of_operation_x,
                 'service_distance'         => $request->service_distance,
@@ -131,18 +133,29 @@ class MappingController extends BaseController
                 'telemetry'                => $request->telemetry,
                 'reff_id'                  => $request->reff_id,
                 'driver_name'              => $vehicle['driver']['name'],
+                'date_installation'        => $vehicle['vehicle']['date_installation'],
                 'license_plate'            => $vehicle['vehicle']['license_plate'],
                 'machine_number'           => $vehicle['vehicle']['machine_number'],
                 'simcard_number'           => $vehicle['vehicle']['simcard_number'],
                 'fuel_consumed'            => $request->total_odometer / $vehicle['vehicle']['model']['fuel_ratio'], 
                 'vehicle_description'      => $vehicle['vehicle']['brand']['brand_vehicle_name'].' '.$vehicle['vehicle']['model']['model_vehicle_name'].' '.$vehicle['vehicle']['year_of_vehicle'],
+                'moving_time'              => 0,
+                'engine_on_time'           => 0,
+                'idle_time'                => 0,
+                'park_time'                => 0,
+                'over_speed_time'          => 0,
+                'category_over_speed'      => null,
+                'is_out_zone'              => false,
+                'duration_out_zone'        => 0,
+                'duration_in_zone'         => 0,
+                'black_box'                => false
             ];
             
             // additional field
             self::getAddress($request->all());
-            self::vehicleStatus($request->all());
+            self::vehicleStatus($request->all(), $vehicle);
             self::alertStatus($request->all());
-            self::checkZone($vehicle, $mapping, $request->all());
+            self::checkZone($vehicle, $request->all());
             self::bestDriver($vehicle, $request->all());
            
             // if data empty then do insert, if not empty do update
@@ -183,34 +196,53 @@ class MappingController extends BaseController
        
     }
 
-    private function vehicleStatus($param){
+    private function vehicleStatus($param, $vehicle){
         if($param['ignition'] == 1) {
             if($param['ignition'] == 1 && $param['speed'] > 0) {
                 self::$temp['vehicle_status'] = 'Moving';
-                self::$temp['moving_time'] = $this->checkDuration($request->all());
+                self::$temp['moving_time'] = $this->checkDuration($param);
             } else {
-                self::$temp['engine_on_time'] = $this->checkDuration($request->all());
+                self::$temp['engine_on_time'] = $this->checkDuration($param);
             }
         } 
 
         if($param['ignition'] == 1) {
             if($param['ignition'] == 1 && $param['speed'] == 0){
                 self::$temp['vehicle_status'] = 'Stop';
-                self::$temp['iddle_time'] = $this->checkDuration($request->all());
+                self::$temp['idle_time'] = $this->checkDuration($param);
             } else {
-                self::$temp['engine_on_time'] = $this->checkDuration($request->all());
+                self::$temp['engine_on_time'] = $this->checkDuration($param);
             }
         }
 
         if($param['ignition'] == 0 && $param['speed'] == 0){
             self::$temp['vehicle_status'] = 'Offline';
-            self::$temp['park_time'] = $this->checkDuration($request->all());
+            self::$temp['park_time'] = $this->checkDuration($param);
         }
             
-        if($param['event_type'] == 'MB_CN')
-            self::$temp['vehicle_status'] = 'Unplugged';
-        
-        //get vehicle status color
+        if($param['event_type'] == 'MB_CN'){
+            self::$temp['vehicle_status'] = 'Unpluged';
+            //set poi
+            $zoneName = null;
+            $point    = array(self::$temp['latitude'], self::$temp['longitude']);
+            if(isset($vehicle['vehicle']['zone']) && !empty($vehicle['vehicle']['zone'])){
+                foreach($vehicle['vehicle']['zone'] as $zone){
+                    if(!empty($zone) && ($zone['type_zone'] == 'POOL')){
+                        foreach($zone['zone_detail'] as $detail){
+                            $polygon[] = [$detail['latitude'], $detail['longitude']];
+                        }
+                        if($this->checkPolygon($point, $polygon)){
+                            //set zone name
+                            $zoneName = $zone['zone_name'];
+                            break;
+                        }
+                    }
+                }
+            }
+            self::$temp['poi'] = $zoneName;
+        }
+
+        // get vehicle status color
         if(isset(self::$temp['vehicle_status'])){
             $msStatusVehicle = MongoMasterStatusVehicle::where('status_vehicle_name', self::$temp['vehicle_status'])->first();
             if(!empty($msStatusVehicle)) 
@@ -224,9 +256,29 @@ class MappingController extends BaseController
         $mongoMsEventRelated = MongoMasterEventRelated::where('provision_alert_name', $param['event_type'])->first();
         if(!empty($mongoMsEventRelated)){ 
             self::$temp['alert_status']   = $mongoMsEventRelated->alert_name;
-            self::$temp['status_alert_color_hex']   = $mongoMsEventRelated->status_alert_color_hex;
+            self::$temp['status_alert_color_hex'] = $mongoMsEventRelated->status_alert_color_hex;
             self::$temp['alert_priority'] = $mongoMsEventRelated->priority_detail['alert_priority_name'];
             self::$temp['alert_priority_color'] = $mongoMsEventRelated->priority_detail['alert_priority_color_hex'];
+
+            // if alert_status = Overspeed then insert duration
+            if($mongoMsEventRelated->alert_name == 'Overspeed'){
+                self::$temp['over_speed_time'] = $this->checkDuration($param);
+                if($param['speed'] >= 80 && $param['speed'] <= 100)
+                    self::$temp['category_over_speed'] = '80 - 100';
+                else 
+                    self::$temp['category_over_speed'] = '> 100';
+            }
+            // send telegram
+            if(isset($mongoMsEventRelated['notif_detail']) && !empty($mongoMsEventRelated['notif_detail'])){
+                $notif = explode(',', $mongoMsEventRelated['notif_detail']['notification_code']);
+                if(in_array('NTF-0001', $notif)) 
+                    Helpers::sendTelegram(self::$temp);
+
+                if(in_array('NTF-0003', $notif)){
+                    $pushData = ['topic' => 'notification', 'data' => Helpers::pushNotificationFormat(self::$temp)];
+                    Helpers::sendToClient($pushData);
+                } 
+            }
         }else{ 
             self::$temp['alert_status'] = null;
             self::$temp['status_alert_color_hex'] = null;
@@ -243,7 +295,7 @@ class MappingController extends BaseController
             // $output = json_decode($geocodeFromLatLong);
             //Get address from json data
             // $address = !empty($output) ? $output->display_name:'';
-            $address = "Limit Get Address Please Buy";
+            $address = null;
             //Return address of the given latitude and longitude
             if(!empty($address))
                self::$temp['last_location'] = $address;
@@ -255,33 +307,38 @@ class MappingController extends BaseController
         }
     }
 
-    private function checkZone($vehicle, $mapping, $param){
+    private function checkZone($vehicle, $param){
+        
         $polygon = [];
         $now = Carbon::now();
         $deviceTime = Carbon::parse($param['device_time']);
-
+        $point      = array($param['latitude'], $param['longitude']);
+        $zoneName   = null;
         if(isset($vehicle['vehicle']['zone']) && !empty($vehicle['vehicle']['zone'])){
             foreach($vehicle['vehicle']['zone'] as $zone){
-                if(!empty($zone)) foreach($zone['zone_detail'] as $detail){
-                    $polygon[] = [$detail['latitude'], $detail['longitude']];
+                if(!empty($zone) && ($zone['type_zone'] == 'OUT')){
+                    $zoneName = $zone['zone_name'];
+                    foreach($zone['zone_detail'] as $detail){
+                        $polygon[] = [$detail['latitude'], $detail['longitude']];
+                    }
                 }
             }
         }
-
-       $point = array($param['latitude'], $param['longitude']);
        if($this->checkPolygon($point, $polygon)){
+         self::$temp['zone_name'] = $zoneName;
          self::$temp['is_out_zone'] = FALSE;
-         self::$temp['duration_out_zone'] = null;
+         self::$temp['duration_in_zone']  = $now->diffInSeconds($deviceTime);
        }else{
+         self::$temp['zone_name'] = $zoneName;
          self::$temp['is_out_zone'] = TRUE;
-         self::$temp['duration_out_zone'] = $now->diffInMinutes($deviceTime);
+         self::$temp['duration_out_zone'] = $now->diffInSeconds($deviceTime);
        }
     }
 
     private function checkDuration($param){
         $now = Carbon::now();
         $deviceTime = Carbon::parse($param['device_time']);
-        return $now->diffInMinutes($deviceTime);
+        return $now->diffInSeconds($deviceTime);
     }
 
     private function checkPolygon($point, $polygon){
@@ -337,22 +394,79 @@ class MappingController extends BaseController
             $bestDriver = $bestDriver->create($data);
         }
        
+
         //insert to rpt_driver_scoring
-        self::driverScoring($vehicle, $data);
+        self::driverScoring($vehicle, $score);
         
         return $bestDriver;
     }
 
-    public function driverScoring($vehicle, $data){
+    public function driverScoring($vehicle, $score){
          $data = [
-            'driver_code'   => $vehicle['driver']['driver_code'],
-            'driver_name'   => $vehicle['driver']['name'],
-            'alert_status'  => self::$temp['alert_status'],
-            'score'         => $data['score'],
-            'license_plate' => $data['license_plate'],
+            'driver_code'      => $vehicle['driver']['driver_code'],
+            'driver_name'      => $vehicle['driver']['name'],
+            'license_plate'    => self::$temp['license_plate'],
+            'alert_status'     => self::$temp['alert_status'],
+            'eco_driving_type' => self::$temp['eco_driving_type'],
+            'is_out_zone'      => (bool) self::$temp['is_out_zone'],
+            'score'            => $score,
+            
         ];
+
         $driverScoring = RptDriverScoring::create($data);
         return $driverScoring;
+    }
+
+    public function showAlertStatusDetail(Request $request){
+        $data = [];
+        if($request->has('alertPriority') && !empty($request->alertPriority)){
+            $filter = [
+                'alert_priority' => $request->alertPriority,
+                'alert_status'   => []
+            ];
+            $msStatusAlert = MsStatusAlert::select('status_alert_name')->get()->toArray();
+            if(!empty($msStatusAlert)) foreach($msStatusAlert as $statusAlert){
+                $filter['alert_status'][] = $statusAlert['status_alert_name'];
+            }
+            $data = MwMapping::raw(function($collection) use ($filter)
+                    {
+                        return $collection->aggregate([
+                            [
+                                '$match' => [
+                                    '$and' => [
+                                        ['alert_status'   => ['$in' => $filter['alert_status']]],
+                                        ['alert_priority' => $filter['alert_priority']]
+                                    ]
+                                ]
+                            ],
+                            [
+                                '$project' => array(
+                                    '_id' => 0,
+                                    'alert_status'   => '$alert_status',
+                                )
+                            ],
+                            [
+                                '$group' => array(
+                                    '_id' => [
+                                            'alert_status' => '$alert_status',
+                                        ],
+                                    'total' => [
+                                        '$sum' => 1
+                                    ]
+                                )
+                            ],
+                            [
+                                '$project' => array(
+                                    '_id' => 0,
+                                    'alert_status' => '$_id.alert_status',
+                                    'total' => '$total'
+                                )
+                            ]
+            
+                        ]);
+                    })->toArray();
+        }
+        return $this->makeResponse(200, 1, null, $data);
     }
 
     public function show(Request $request, $id){

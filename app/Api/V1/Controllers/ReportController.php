@@ -6,6 +6,7 @@ use App\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
 use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
 use App\Models\MwMappingHistory;
+use App\Models\RptOutOfZone;
 use App\Models\RptDriverScoring;
 use App\Models\MongoMasterEventRelated;
 use App\Models\MongoGpsNotUpdateOneDay;
@@ -178,6 +179,8 @@ class ReportController extends BaseController
                         'speed'             => ['$sum'   => '$speed'],
                         'fuel'              => ['$sum'   => 'fuel_consumed'],
                         'duration_out_zone' => ['$sum'   => '$duration_out_zone'],
+                        'start_date'        => ['$first' => '$device_time'],
+                        'end_date'          => ['$last'  => '$device_time'],
                     )
                 ]
                 ,[
@@ -192,6 +195,9 @@ class ReportController extends BaseController
                         'idle_time'      => '$idle_time',
                         'fuel'           => '$fuel',
                         'engine_on_time' => '$engine_on_time',
+                        'duration'       =>  [
+                            '$ifNull' => [null,$duration]
+                        ],
                         'total_mileage'  => '$total_mileage',
                         'average_speed'  => [
                             '$divide' => [ '$speed', '$total_data']
@@ -199,7 +205,9 @@ class ReportController extends BaseController
                         'rasio_engine_on' => [
                             '$divide' => ['$engine_on_time', $duration]
                         ],
-                        'duration_out_zone' => '$duration_out_zone'
+                        'duration_out_zone' => '$duration_out_zone',
+                        'start_date' => '$start_date',
+                        'end_date' => '$end_date'
                     )
                 ],
             ];
@@ -304,7 +312,7 @@ class ReportController extends BaseController
                if(!empty($lte)) $created_at['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
                if(!empty($created_at)) $search['$match']['device_time'] = $created_at;
             }
-            
+           
             $query = [
                 [
                 '$project' => array(
@@ -477,9 +485,9 @@ class ReportController extends BaseController
 
     public function reportOutOfGeofence(Request $request){
         $this->filters($request);
-        $data = MwMappingHistory::raw(function($collection) use ($request)
+        $data = RptOutOfZone::raw(function($collection) use ($request)
         {
-            $search['$match']['is_out_zone'] = ['$in' => [true , false]];
+            $search['$match'] = [];
             if($request->has('license_plate') && !empty($request->license_plate)){
               $search['$match']['license_plate'] = $request->license_plate;
             }
@@ -492,13 +500,12 @@ class ReportController extends BaseController
                if(!empty($lte)) $created_at['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
                if(!empty($created_at)) $search['$match']['device_time'] = $created_at;
             }
-
+           
             $query = [
                 [
                     '$group' => array(
                         '_id' => [
-                            'imei' => '$imei',
-                            'is_out_zone' => '$is_out_zone',
+                            'imei' => '$imei'
                         ],
                         'license_plate'     => ['$first' => '$license_plate'],
                         'vehicle_number'    => ['$first' => '$vehicle_number'],
@@ -507,7 +514,6 @@ class ReportController extends BaseController
                         'branch'            => ['$first' => '$branch'],
                         'address'           => ['$last'  => '$last_location'],
                         'duration_out_zone' => ['$sum'   => '$duration_out_zone'],
-                        'duration_in_zone'  => ['$sum'   => '$duration_in_zone']
                     )
                 ],
                 [
@@ -518,14 +524,7 @@ class ReportController extends BaseController
                         'vin'            => '$vehicle_number',
                         'machine_number' => '$machine_number',
                         'address'        => '$address',
-                        'is_out_zone'    => '$_id.is_out_zone',
-                        'duration'       => [
-                            '$cond' => [
-                                'if'   => ['$eq'    => [ '$_id.is_out_zone', true ]],
-                                'then' => ['$sum'   => '$duration_out_zone'],
-                                'else' => ['$sum'   => '$duration_in_zone'],
-                            ]
-                        ],
+                        'duration'       => ['$sum'   => '$duration_out_zone'],
                         'geofence_area'  => '$branch'
                     )
                 ],

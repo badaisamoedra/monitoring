@@ -160,7 +160,7 @@ Class Helpers{
             $result['showGPSnotUpdatedOneDay'][] = [
                                                     'license_plate' => $val['license_plate'],
                                                     'last_updated'  => $val['device_time'],
-                                                    'duration'      => Carbon::now()->diffInMinutes($val['device_time'])
+                                                    'duration'      => Carbon::now()->diffInSeconds($val['device_time'])
             ];
         }
         
@@ -175,7 +175,7 @@ Class Helpers{
             $result['showGPSnotUpdatedThreeDay'][] = [
                                                     'license_plate' => $val['license_plate'],
                                                     'last_updated'  => $val['device_time'],
-                                                    'duration'      => Carbon::now()->diffInMinutes($val['device_time'])
+                                                    'duration'      => Carbon::now()->diffInSeconds($val['device_time'])
             ];
         }
 
@@ -295,5 +295,15 @@ Class Helpers{
         $utcdatetime = new \MongoDB\BSON\UTCDateTime($date);
         $datetime = $utcdatetime->toDateTime();
         return  $datetime->format('Y-m-d H:i:s');
+    }
+
+    public static function speedCalculation($totalSpeed, $totalRow){
+        if(!empty($totalSpeed)){
+            $result = $totalSpeed / $totalRow;
+            $result = ($result > 0) ? (int) $result : 0;
+        }else{
+            $result = 0;
+        }
+        return $result;
     }
 }
