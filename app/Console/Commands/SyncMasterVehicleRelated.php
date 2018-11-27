@@ -75,6 +75,7 @@ class SyncMasterVehicleRelated extends Command
 						'machine_number'		=> $data->vehicle->machine_number,
 						'date_stnk'				=> $data->vehicle->date_stnk,
 						'date_installation'		=> $data->vehicle->date_installation,
+						'type_vehicle'		    => $data->vehicle->type_vehicle,
 						'speed_limit'			=> $data->vehicle->speed_limit,
 						'odometer'				=> $data->vehicle->odometer,
 						'area_code'				=> $data->vehicle->area_code,

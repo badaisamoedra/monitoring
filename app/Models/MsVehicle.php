@@ -26,6 +26,7 @@ class MsVehicle extends Model {
             'odometer',
             'area_code',
             'reff_vehicle_id',
+            'type_vehicle',
             'status'
         ];
 

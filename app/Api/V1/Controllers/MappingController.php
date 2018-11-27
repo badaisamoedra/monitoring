@@ -138,7 +138,7 @@ class MappingController extends BaseController
                 'machine_number'           => $vehicle['vehicle']['machine_number'],
                 'simcard_number'           => $vehicle['vehicle']['simcard_number'],
                 'fuel_consumed'            => $request->total_odometer / $vehicle['vehicle']['model']['fuel_ratio'], 
-                'vehicle_description'      => $vehicle['vehicle']['brand']['brand_vehicle_name'].' '.$vehicle['vehicle']['model']['model_vehicle_name'].' '.$vehicle['vehicle']['year_of_vehicle'],
+                'vehicle_description'      => $vehicle['vehicle']['brand']['brand_vehicle_name'].' '.$vehicle['vehicle']['model']['model_vehicle_name'].' '.$vehicle['vehicle']['type_vehicle'].' '.$vehicle['vehicle']['year_of_vehicle'],
                 // 'moving_time'              => 0,
                 // 'engine_on_time'           => 0,
                 // 'idle_time'                => 0,
