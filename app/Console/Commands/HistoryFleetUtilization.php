@@ -54,7 +54,7 @@ class HistoryFleetUtilization extends Command
 			$mwMapping = MwMapping::get()->toArray();
 			if(!empty($mwMapping)) foreach($mwMapping as $mwMapping){
 				$date      = Carbon::now()->subDays(1)->format('Y-m-d');
-				$startDate = new \MongoDB\BSON\UTCDatetime(strtotime($date.' 05:19:00')*1000);
+				$startDate = new \MongoDB\BSON\UTCDatetime(strtotime($date.' 00:00:00')*1000);
 				$endDate   = new \MongoDB\BSON\UTCDatetime(strtotime($date.' 23:59:59')*1000);
 				// $getHistory = MwMappingHistory::select('license_plate', 'vehicle_number', 'ignition','speed', 'device_time','total_odometer','fuel_consumed', 'vehicle_status')
 				$getHistory = MwMappingHistory::whereBetween('device_time', [$startDate, $endDate])
@@ -97,8 +97,8 @@ class HistoryFleetUtilization extends Command
 							//jika row terakhir ispark == true
 							if(($key == ($count - 1))){
 								//store in rpt_utilization
-								
-								if(empty(RptUtilization::where('device_time', new \MongoDB\BSON\UTCDatetime(strtotime($hsty['device_time'])*1000))->first())){
+								$checking = RptUtilization::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
+								if(empty($checking->first())){
 									$hsty['speed'] = 0;
 									$hsty['ignition'] = 0;
 									$hsty['park_time'] = $durationParkTime;
@@ -134,7 +134,8 @@ class HistoryFleetUtilization extends Command
 
 							//store in rpt_utilization
 							$hsty['park_time'] = $durationParkTime;
-							if(empty(RptUtilization::where('device_time', new \MongoDB\BSON\UTCDatetime(strtotime($hsty['device_time'])*1000))->first())){
+							$checking = RptUtilization::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
+							if(empty($checking->first())){
 								$hsty['speed'] = 0;
 								$hsty['ignition'] = 0;
 								$hsty['park_time'] = $durationParkTime;
@@ -175,7 +176,8 @@ class HistoryFleetUtilization extends Command
 							//jika row terakhir isMoving == true
 							if(($key == ($count - 1))){
 								//store in rpt_utilization
-								if(empty(RptUtilization::where('device_time', new \MongoDB\BSON\UTCDatetime(strtotime($hsty['device_time'])*1000))->first())){
+								$checking = RptUtilization::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
+								if(empty($checking->first())){
 									$hsty['speed'] 			= Helpers::speedCalculation($speedMoving, $counterMovingTime+1); // Harus di sum nih kayaknya karna speed harus > 0, klo diambil last nya ternya speednya 0 kan jadi kaco
 									$hsty['ignition'] 		= 1;
 									$hsty['moving_time'] 	= $durationMovingTime;
@@ -212,7 +214,8 @@ class HistoryFleetUtilization extends Command
 							$fuelComsumedMoving   = $hsty['fuel_consumed'];
 							$speedMoving 		 += $hsty['speed'];
 							//store in rpt_utilization
-							if(empty(RptUtilization::where('device_time', new \MongoDB\BSON\UTCDatetime(strtotime($hsty['device_time'])*1000))->first())){
+							$checking = RptUtilization::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
+							if(empty($checking->first())){
 								$hsty['speed'] 			= Helpers::speedCalculation($speedMoving, $counterMovingTime+1); // Harus di sum nih kayaknya karna speed harus > 0, klo diambil last nya ternya speednya 0 kan jadi kaco
 								$hsty['ignition'] 		= 1;
 								$hsty['moving_time'] 	= $durationMovingTime;
@@ -252,7 +255,8 @@ class HistoryFleetUtilization extends Command
 							//jika row terakhir isMoving == true
 							if(($key == ($count - 1))){
 								//store in rpt_utilization
-								if(empty(RptUtilization::where('device_time', new \MongoDB\BSON\UTCDatetime(strtotime($hsty['device_time'])*1000))->first())){
+								$checking = RptUtilization::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
+								if(empty($checking->first())){
 									$hsty['speed'] 			= 0;
 									$hsty['ignition'] 	    = 1;
 									$hsty['idle_time'] 	= $durationIdleTime;
@@ -286,7 +290,8 @@ class HistoryFleetUtilization extends Command
 							$odoMeterIdle 	   = $hsty['total_odometer'];
 							$fuelComsumedIdle  = $hsty['fuel_consumed'];
 							//store in rpt_utilization
-							if(empty(RptUtilization::where('device_time', new \MongoDB\BSON\UTCDatetime(strtotime($hsty['device_time'])*1000))->first())){
+							$checking = RptUtilization::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
+							if(empty($checking->first())){
 								$hsty['speed'] 			= 0;
 								$hsty['ignition'] 	    = 1;
 								$hsty['idle_time'] 	= $durationIdleTime;

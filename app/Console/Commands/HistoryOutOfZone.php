@@ -63,7 +63,7 @@ class HistoryOutOfZone extends Command
 				$count       = $getHistory->count();
 				$duration    = 0;
 				$isOutOfZone = 0;
-				if(!empty($getHistory)) foreach($getHistory->toArray() as $hsty){
+				if(!empty($getHistory)) foreach($getHistory->toArray() as $key => $hsty){
 					if($hsty['is_out_zone']){
 						if($n > 0){
 							$isOutOfZone = 1;
@@ -77,10 +77,13 @@ class HistoryOutOfZone extends Command
 						}
 
 						//jika row terakhir is_out_zone == true
-						if(($n == ($count - 1))){
+						if(($key == ($count - 1))){
 							//store in rpt_out_of_zone
-							$hsty['out_zone_time'] = $duration;
-							RptOutOfZone::create($hsty);
+							$checking = RptOutOfZone::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
+							if(empty($checking->first())){
+								$hsty['out_zone_time'] = $duration;
+								RptOutOfZone::create($hsty);
+							}
 						}
 						
 					}else{
@@ -94,8 +97,11 @@ class HistoryOutOfZone extends Command
 							$duration+= ($start->diffInSeconds($hsty['device_time']));
 							
 							//store in rpt_out_of_zone
-							$hsty['out_zone_time'] = $duration;
-							RptOutOfZone::create($hsty);
+							$checking = RptOutOfZone::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
+							if(empty($checking->first())){
+								$hsty['out_zone_time'] = $duration;
+								RptOutOfZone::create($hsty);
+							}
 						}
 						$isOutOfZone = 0;
 					}

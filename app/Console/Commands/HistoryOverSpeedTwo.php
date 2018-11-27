@@ -63,8 +63,8 @@ class HistoryOverSpeedTwo extends Command
 				$duration    = 0;
 				$isOverSpeed = 0;
 				// For overspeed > 100
-				if(!empty($getHistory)) foreach($getHistory->toArray() as $hsty){
-					if($hsty['alert_status'] == 'Sampling'){
+				if(!empty($getHistory)) foreach($getHistory->toArray() as $key => $hsty){
+					if($hsty['alert_status'] == 'Overspeed'){
 						if($hsty['speed'] > 100){
 							if($n > 0){
 								$isOverSpeed = 1;
@@ -72,17 +72,22 @@ class HistoryOverSpeedTwo extends Command
 														->where('device_time' , '<', new \MongoDB\BSON\UTCDatetime(strtotime($hsty['device_time'])*1000))
 														->where('speed', '>', 100)
 														->where('license_plate', $hsty['license_plate'])
-														->orderBy('device_time', 'desc')->first()->toArray();
-								$start = Carbon::parse($lastRow['device_time']);
-								$duration += ($start->diffInSeconds($hsty['device_time']));
+														->orderBy('device_time', 'desc')->first();
+								if(!empty($lastRow)){
+									$start = Carbon::parse($lastRow->device_time);
+									$duration += ($start->diffInSeconds($hsty['device_time']));
+								}
 							}
 
 							//jika row terakhir overspeed == true
-							if(($n == ($count - 1))){
+							if(($key == ($count - 1))){
 								//store in rpt_over_speed
-								$hsty['over_speed_time'] = $duration;
-								$hsty['category_over_speed'] = "> 100";
-								RptOverSpeed::create($hsty);
+								$checking = RptOverSpeed::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
+								if(empty($checking->first())){
+									$hsty['over_speed_time'] = $duration;
+									$hsty['category_over_speed'] = "> 100";
+									RptOverSpeed::create($hsty);
+								}
 							}
 						}else{
 							//get status overspeed > 100 dari  (status overspeed 80 - 100 secara berturut2)
@@ -91,14 +96,19 @@ class HistoryOverSpeedTwo extends Command
 															->where('device_time' , '<', new \MongoDB\BSON\UTCDatetime(strtotime($hsty['device_time'])*1000))
 															->where('speed', '>', 100)
 															->where('license_plate', $hsty['license_plate'])
-															->orderBy('device_time', 'desc')->first()->toArray();
-								$start = Carbon::parse($lastRow['device_time']);
-								$duration+= ($start->diffInSeconds($hsty['device_time']));
+															->orderBy('device_time', 'desc')->first();
+								if(!empty($lastRow)){
+									$start = Carbon::parse($lastRow->device_time);
+									$duration+= ($start->diffInSeconds($hsty['device_time']));
+								}
 								
 								//store in rpt_over_speed
-								$hsty['over_speed_time'] = $duration;
-								$hsty['category_over_speed'] = "> 100";
-								RptOverSpeed::create($hsty);
+								$checking = RptOverSpeed::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
+								if(empty($checking->first())){
+									$hsty['over_speed_time'] = $duration;
+									$hsty['category_over_speed'] = "> 100";
+									RptOverSpeed::create($hsty);
+								}
 							}
 							$isOverSpeed = 0;
 						}
@@ -110,14 +120,19 @@ class HistoryOverSpeedTwo extends Command
 													    ->where('device_time' , '<', new \MongoDB\BSON\UTCDatetime(strtotime($hsty['device_time'])*1000))
 														->where('speed', '>', 100)
 														->where('license_plate', $hsty['license_plate'])
-														->orderBy('device_time', 'desc')->first()->toArray();
-							$start = Carbon::parse($lastRow['device_time']);
-							$duration+= ($start->diffInSeconds($hsty['device_time']));
+														->orderBy('device_time', 'desc')->first();
+							if(!empty($lastRow)){
+								$start = Carbon::parse($lastRow->device_time);
+								$duration+= ($start->diffInSeconds($hsty['device_time']));
+							}
 							
 							//store in rpt_over_speed
-							$hsty['over_speed_time'] = $duration;
-							$hsty['category_over_speed'] = "> 100";
-							RptOverSpeed::create($hsty);
+							$checking = RptOverSpeed::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
+							if(empty($checking->first())){
+								$hsty['over_speed_time'] = $duration;
+								$hsty['category_over_speed'] = "> 100";
+								RptOverSpeed::create($hsty);
+							}
 						}
 						$isOverSpeed = 0;
 					}

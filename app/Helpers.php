@@ -297,6 +297,10 @@ Class Helpers{
         return  $datetime->format('Y-m-d H:i:s');
     }
 
+    public static function stringToBson($stringDate){
+        return new \MongoDB\BSON\UTCDatetime(strtotime($stringDate)*1000);
+    }
+
     public static function speedCalculation($totalSpeed, $totalRow){
         if(!empty($totalSpeed)){
             $result = $totalSpeed / $totalRow;
