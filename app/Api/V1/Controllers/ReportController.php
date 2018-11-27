@@ -175,7 +175,7 @@ class ReportController extends BaseController
                         'park_time'         => ['$sum'   => '$park_time'],
                         'moving_time'       => ['$sum'   => '$moving_time'],
                         'idle_time'         => ['$sum'   => '$idle_time'],
-                        'total_mileage'     => ['$sum'   => '$total_odometer'],
+                        'total_mileage'     => ['$last'   => '$total_odometer'],
                         'speed'             => ['$sum'   => '$speed'],
                         'fuel'              => ['$sum'   => 'fuel_consumed'],
                         // 'duration_out_zone' => ['$sum'   => '$duration_out_zone'], di take out
@@ -195,7 +195,7 @@ class ReportController extends BaseController
                         'idle_time'         => '$idle_time',
                         'fuel'              => '$fuel',
                         'total_mileage'     => '$total_mileage',
-                        'engine_on_time'    => ['$subtract' => ['$moving_time', '$idle_time']],
+                        'engine_on_time'    => ['$add'    => ['$moving_time', '$idle_time']],
                         'duration'          => ['$ifNull' => [null,$duration]],
                         'average_speed'     => ['$divide' => [ '$speed', '$total_data']],
                         'rasio_engine_on'   => ['$divide' => ['$engine_on_time', $duration]],
@@ -505,7 +505,7 @@ class ReportController extends BaseController
                         'device_time'       => ['$first' => '$device_time'],
                         'branch'            => ['$first' => '$branch'],
                         'address'           => ['$last'  => '$last_location'],
-                        'duration_out_zone' => ['$sum'   => '$duration_out_zone'],
+                        'duration_out_zone' => ['$sum'   => '$out_zone_time'],
                     )
                 ],
                 [
@@ -516,7 +516,7 @@ class ReportController extends BaseController
                         'vin'            => '$vehicle_number',
                         'machine_number' => '$machine_number',
                         'address'        => '$address',
-                        'duration'       => ['$sum' => '$duration_out_zone'],
+                        'duration'       => ['$sum' => '$out_zone_time'],
                         'geofence_area'  => '$branch'
                     )
                 ],
