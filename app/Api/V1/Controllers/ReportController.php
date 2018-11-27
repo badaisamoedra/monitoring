@@ -163,7 +163,7 @@ class ReportController extends BaseController
                if(!empty($created_at)) $search['$match']['device_time'] = $created_at;
             }
             $duration = Carbon::parse($request->startDate);
-            $duration = (int) $duration->diffInMinutes($request->endDate);
+            $duration = (int) $duration->diffInSeconds($request->endDate);
             $query = [
                 [
                     '$group' => array(
@@ -196,9 +196,9 @@ class ReportController extends BaseController
                         'fuel'              => '$fuel',
                         'total_mileage'     => '$total_mileage',
                         'engine_on_time'    => ['$add'    => ['$moving_time', '$idle_time']],
-                        'duration'          => ['$ifNull' => [null,$duration]],
+                        'duration'          => ['$ifNull' => [0, $duration]],
                         'average_speed'     => ['$divide' => [ '$speed', '$total_data']],
-                        'rasio_engine_on'   => ['$divide' => ['$engine_on_time', $duration]],
+                        'rasio_engine_on'   => ['$ifNull' => [0, ['$divide' => ['$engine_on_time', $duration]]]],
                         // 'duration_out_zone' => '$duration_out_zone', di take out
                         'start_date'        => '$start_date',
                         'end_date'          => '$end_date'
