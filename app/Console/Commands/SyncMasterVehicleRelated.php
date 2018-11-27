@@ -56,12 +56,12 @@ class SyncMasterVehicleRelated extends Command
 				$checkDataMongo = MongoMasterVehicleRelated::where('vehicle_code', $data->vehicle->vehicle_code)->first();
 
 				if (empty($checkDataMongo)) {
-					$vehicleBrandModel = MsVehicle::with(['brand','model'])->where('vehicle_code', $data->vehicle->vehicle_code)->first();
+					$vehicleBrandModel = MsVehicle::with(['brand','model', 'area'])->where('vehicle_code', $data->vehicle->vehicle_code)->first();
 					$dataBrandModel = $vehicleBrandModel->toArray();
 
 					$getZones = MsZone::with(['zone_detail'])->where('area_code', $data->vehicle->area_code)->get();
 					$dataZones = $getZones->toArray();
-
+					
 					$vehicle = [
 						'vehicle_code'			=> $data->vehicle->vehicle_code,
 						'license_plate'			=> $data->vehicle->license_plate,
@@ -87,7 +87,7 @@ class SyncMasterVehicleRelated extends Command
 						'area'					=> $dataBrandModel['area'],
 						'zone'					=> $dataZones
 					];
-
+					
 					$driver = [
 						'driver_code'	=> $data->driver->driver_code,
 						'name'			=> $data->driver->name,
