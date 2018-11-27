@@ -6,12 +6,10 @@ use App\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
 use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
 use App\Models\MwMappingHistory;
-use App\Models\RptOutOfZone;
 use App\Models\RptDriverScoring;
 use App\Models\MongoMasterEventRelated;
 use App\Models\MongoGpsNotUpdateOneDay;
 use App\Models\MongoGpsNotUpdateThreeDay;
-use App\Models\RptUtilization;
 use Carbon\Carbon;
 use Auth;
 
@@ -147,7 +145,7 @@ class ReportController extends BaseController
 
     public function reportFleetUtilisation(Request $request){
         $this->filters($request);
-        $data = RptUtilization::raw(function($collection) use ($request)
+        $data = MwMappingHistory::raw(function($collection) use ($request)
         {  
             $search['$match'] = [];
             if($request->has('license_plate') && !empty($request->license_plate)){
@@ -175,10 +173,11 @@ class ReportController extends BaseController
                         'park_time'         => ['$sum'   => '$park_time'],
                         'moving_time'       => ['$sum'   => '$moving_time'],
                         'idle_time'         => ['$sum'   => '$idle_time'],
+                        'engine_on_time'    => ['$sum'   => '$engine_on_time'],
                         'total_mileage'     => ['$sum'   => '$total_odometer'],
                         'speed'             => ['$sum'   => '$speed'],
                         'fuel'              => ['$sum'   => 'fuel_consumed'],
-                        // 'duration_out_zone' => ['$sum'   => '$duration_out_zone'], di take out
+                        'duration_out_zone' => ['$sum'   => '$duration_out_zone'],
                         'start_date'        => ['$first' => '$device_time'],
                         'end_date'          => ['$last'  => '$device_time'],
                     )
@@ -186,22 +185,28 @@ class ReportController extends BaseController
                 ,[
                     '$project' => array(
                         '_id'            => 0,
-                        'license_plate'     => '$license_plate',
-                        'vin'               => '$vehicle_number',
-                        'machine_number'    => '$machine_number',
-                        'total_data'        => '$total_data',
-                        'park_time'         => '$park_time',
-                        'moving_time'       => '$moving_time',
-                        'idle_time'         => '$idle_time',
-                        'fuel'              => '$fuel',
-                        'total_mileage'     => '$total_mileage',
-                        'engine_on_time'    => ['$subtract' => ['$moving_time', '$idle_time']],
-                        'duration'          => ['$ifNull' => [null,$duration]],
-                        'average_speed'     => ['$divide' => [ '$speed', '$total_data']],
-                        'rasio_engine_on'   => ['$divide' => ['$engine_on_time', $duration]],
-                        // 'duration_out_zone' => '$duration_out_zone', di take out
-                        'start_date'        => '$start_date',
-                        'end_date'          => '$end_date'
+                        'license_plate'  => '$license_plate',
+                        'vin'            => '$vehicle_number',
+                        'machine_number' => '$machine_number',
+                        'total_data'     => '$total_data',
+                        'park_time'      => '$park_time',
+                        'moving_time'    => '$moving_time',
+                        'idle_time'      => '$idle_time',
+                        'fuel'           => '$fuel',
+                        'engine_on_time' => '$engine_on_time',
+                        'duration'       =>  [
+                            '$ifNull' => [null,$duration]
+                        ],
+                        'total_mileage'  => '$total_mileage',
+                        'average_speed'  => [
+                            '$divide' => [ '$speed', '$total_data']
+                        ],
+                        'rasio_engine_on' => [
+                            '$divide' => ['$engine_on_time', $duration]
+                        ],
+                        'duration_out_zone' => '$duration_out_zone',
+                        'start_date' => '$start_date',
+                        'end_date' => '$end_date'
                     )
                 ],
             ];
@@ -339,7 +344,7 @@ class ReportController extends BaseController
                                             'else' => 'Off'
                                         ]
                     ],
-                    'sleep_mode'     => [
+                    'sleep_mode'           => [
                                         '$cond' => [
                                             'if'   => [ '$eq' => [ '$deep_sleep', 0 ]],
                                             'then' => 'Off',
@@ -479,9 +484,9 @@ class ReportController extends BaseController
 
     public function reportOutOfGeofence(Request $request){
         $this->filters($request);
-        $data = RptOutOfZone::raw(function($collection) use ($request)
+        $data = MwMappingHistory::raw(function($collection) use ($request)
         {
-            $search['$match'] = [];
+            $search['$match']['is_out_zone'] = ['$in' => [true , false]];
             if($request->has('license_plate') && !empty($request->license_plate)){
               $search['$match']['license_plate'] = $request->license_plate;
             }
@@ -494,11 +499,14 @@ class ReportController extends BaseController
                if(!empty($lte)) $created_at['$lte'] = new \MongoDB\BSON\UTCDatetime(strtotime($lte)*1000);
                if(!empty($created_at)) $search['$match']['device_time'] = $created_at;
             }
-           
+
             $query = [
                 [
                     '$group' => array(
-                        '_id'               => ['imei'   => '$imei'],
+                        '_id' => [
+                            'imei' => '$imei',
+                            'is_out_zone' => '$is_out_zone',
+                        ],
                         'license_plate'     => ['$first' => '$license_plate'],
                         'vehicle_number'    => ['$first' => '$vehicle_number'],
                         'machine_number'    => ['$first' => '$machine_number'],
@@ -506,6 +514,7 @@ class ReportController extends BaseController
                         'branch'            => ['$first' => '$branch'],
                         'address'           => ['$last'  => '$last_location'],
                         'duration_out_zone' => ['$sum'   => '$duration_out_zone'],
+                        'duration_in_zone'  => ['$sum'   => '$duration_in_zone']
                     )
                 ],
                 [
@@ -516,7 +525,14 @@ class ReportController extends BaseController
                         'vin'            => '$vehicle_number',
                         'machine_number' => '$machine_number',
                         'address'        => '$address',
-                        'duration'       => ['$sum' => '$duration_out_zone'],
+                        'is_out_zone'    => '$_id.is_out_zone',
+                        'duration'       => [
+                            '$cond' => [
+                                'if'   => ['$eq'    => [ '$_id.is_out_zone', true ]],
+                                'then' => ['$sum'   => '$duration_out_zone'],
+                                'else' => ['$sum'   => '$duration_in_zone'],
+                            ]
+                        ],
                         'geofence_area'  => '$branch'
                     )
                 ],
@@ -554,13 +570,13 @@ class ReportController extends BaseController
             $query = [
                 [
                     '$project' => array(
-                        'license_plate'       => '$license_plate',
-                        'device_time'         => '$device_time',
-                        'vin'                 => '$vehicle_number',
-                        'machine_number'      => '$machine_number',
-                        'address'             => '$last_location',
-                        'speed'               => '$speed',
-                        'over_speed_time'     => '$over_speed_time',
+                        'license_plate'   => '$license_plate',
+                        'device_time'     => '$device_time',
+                        'vin'             => '$vehicle_number',
+                        'machine_number'  => '$machine_number',
+                        'address'         => '$last_location',
+                        'speed'           => '$speed',
+                        'over_speed_time' => '$over_speed_time',
                         'category_over_speed' => '$category_over_speed',
                     )
                 ],
@@ -594,8 +610,12 @@ class ReportController extends BaseController
             $query = [
             [
                 '$project' => array(
-                    'geofence_area'  => ['$ifNull' => [ null, '$geofence_area' ]],
-                    'poi'            => ['$ifNull' => [ null, '$poi' ]],
+                    'geofence_area'  => [
+                        '$ifNull' => [ null, '$geofence_area' ]
+                    ],
+                    'poi'            => [
+                        '$ifNull' => [ null, '$poi' ]
+                    ],
                     'device_time'    => '$device_time',
                     'license_plate'  => '$license_plate',
                     'vin'            => '$vehicle_number',

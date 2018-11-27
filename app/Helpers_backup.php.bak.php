@@ -8,7 +8,6 @@ use App\Models\TransactionVehiclePair;
 use App\Models\MongoMasterStatusVehicle;
 use App\Models\MongoMasterStatusEvent;
 use App\Models\MongoMasterEventRelated;
-use App\Models\MsStatusAlertPriority;
 use App\Models\MsVehicle;
 use App\Models\BestDriver;
 use Illuminate\Support\Facades\Mail;
@@ -54,14 +53,37 @@ Class Helpers{
                         ]
                     )
                 ],
-
                 [
-                    '$project' => array(
-                        'vehicle_status' => '$_id.vehicle_status',
-                        'vehicle_status_color' => '$_id.vehicle_status_color',
-                        'total' => '$total'
+                    '$group' => array(
+                        '_id' => 0,
+                        'types' => [
+                            '$push' => [
+                                'vehicle_status' => '$_id.vehicle_status',
+                                'vehicle_status_color' => '$_id.vehicle_status_color',
+                                'total' => '$total'
+                            ]
+                        ],
+                        "grandTotal" => [
+                            '$sum' => '$total'
+                        ]
                     )
                 ],
+                [
+                    '$unwind' => '$types'
+                ],
+                [
+                    '$project' => array(
+                        '_id' => 0,
+                        'vehicle_status' => '$types.vehicle_status',
+                        'vehicle_status_color' => '$types.vehicle_status_color',
+                        'percentage' => [
+                            '$multiply' => [[
+                                '$divide' => [100, '$grandTotal']
+                            ], '$types.total']
+                        ]
+                    )
+                ]
+
 
             ]);
         })->toArray();
@@ -73,11 +95,11 @@ Class Helpers{
             foreach($masterVehicleStatus as $status){
                 $tempVehicleStatus[$n]['vehicle_status'] = $status['status_vehicle_name'];
                 $tempVehicleStatus[$n]['vehicle_status_color']= $status['color_hex'];
-                $tempVehicleStatus[$n]['total'] = null;
+                $tempVehicleStatus[$n]['percentage'] = null;
                 if(!empty($showVehicleStatus)){
                     foreach($showVehicleStatus as $vehicleStatus){
                         if($vehicleStatus['vehicle_status'] == $status['status_vehicle_name']){
-                            $tempVehicleStatus[$n]['total'] = $vehicleStatus['total'];
+                            $tempVehicleStatus[$n]['percentage'] = $vehicleStatus['percentage'];
                         }
                     }
                 }
@@ -102,15 +124,15 @@ Class Helpers{
                 [
                     '$project' => array(
                         '_id' => 0,
-                        'alert_priority' => '$alert_priority',
-                        'alert_status'   => '$alert_status',
+                        'alert_status' => '$alert_status',
                         'status_alert_color_hex' => '$status_alert_color_hex'
                     )
                 ],
                 [
                     '$group' => array(
                         '_id' => [
-                                'alert_priority' => '$alert_priority',
+                                'alert_status' => '$alert_status',
+                                'status_alert_color_hex' => '$status_alert_color_hex',
                             ],
                         'total' => [
                             '$sum' => 1
@@ -118,35 +140,133 @@ Class Helpers{
                     )
                 ],
                 [
-                    '$project' => array(
+                    '$group' => array(
                         '_id' => 0,
-                        'alert_priority' => '$_id.alert_priority',
-                        'total' => '$total'
+                        'types' => [
+                            '$push' => [
+                                'alert_status' => '$_id.alert_status',
+                                'status_alert_color_hex' => '$_id.status_alert_color_hex',
+                                'total' => '$total'
+                            ]
+                        ],
+                        "grandTotal" => [
+                            '$sum' => '$total'
+                        ]
                     )
+                ],
+                [
+                    '$unwind' => '$types'
+                ],
+                [
+                    '$project' => [
+                        '_id' => 0,
+                        'alert_status' => '$types.alert_status',
+                        'status_alert_color_hex' => '$types.status_alert_color_hex',
+                        'percentage' => [
+                            '$multiply' => [[
+                                '$divide' => [100, '$grandTotal']
+                            ], '$types.total']
+                        ]
+                    ]
                 ]
+
 
             ]);
         })->toArray();
-       
+        
+        $n = 0;
+        $tempAlertStatus = [];
+        $masterStatusEvent = MongoMasterStatusEvent::get()->toArray();
+        if(!empty($masterStatusEvent)) foreach($masterStatusEvent as $masterStatus){
+            $tempAlertStatus[$n]['alert_status'] = $masterStatus['status_alert_name'];
+            $tempAlertStatus[$n]['status_alert_color_hex']= $masterStatus['status_alert_color_hex'];
+            $tempAlertStatus[$n]['percentage'] = null;
+            foreach($showAlertStatus as $status){
+                if($status['alert_status'] == $masterStatus['status_alert_name']){
+                    $tempAlertStatus[$n]['percentage'] = $status['percentage'];
+                }
+            }
+            $n++;
+        }
+        
+
+        //************************************* get alert priority *******************************************//
+         $showAlertPriority = MwMapping::raw(function($collection)
+        {
+            return $collection->aggregate([
+                [
+                    '$project' => array(
+                        '_id' => 0,
+                        'alert_priority' => '$alert_priority',
+                        'alert_priority_color' => '$alert_priority_color'
+                    )
+                ],
+                [
+                    '$group' => array(
+                        '_id' => [
+                                'alert_priority' => '$alert_priority',
+                                'alert_priority_color' => '$alert_priority_color',
+                            ],
+                        'total' => [
+                            '$sum' => 1
+                        ]
+                    )
+                ],
+                [
+                    '$group' => array(
+                        '_id' => 0,
+                        'types' => [
+                            '$push' => [
+                                'alert_priority' => '$_id.alert_priority',
+                                'alert_priority_color' => '$_id.alert_priority_color',
+                                'total' => '$total'
+                            ]
+                        ],
+                        "grandTotal" => [
+                            '$sum' => '$total'
+                        ]
+                    )
+                ],
+                [
+                    '$unwind' => '$types'
+                ],
+                [
+                    '$project' => [
+                        '_id' => 0,
+                        'alert_priority' => '$types.alert_priority',
+                        'alert_priority_color' => '$types.alert_priority_color',
+                        'percentage' => [
+                            '$multiply' => [[
+                                '$divide' => [100, '$grandTotal']
+                            ], '$types.total']
+                        ]
+                    ]
+                ]
+
+
+            ]);
+        })->toArray();
+        
         $n=0;
         $tempAlertPriority = [];
-        $masterAlertPriority = MsStatusAlertPriority::get()->toArray();
+        $masterAlertPriority = self::masterAlertPriority();
         if(!empty($masterAlertPriority)) foreach($masterAlertPriority as $priority){
             $tempAlertPriority[$n]['alert_priority'] = $priority['alert_priority_name'];
             $tempAlertPriority[$n]['alert_priority_color']= $priority['alert_priority_color_hex'];
-            $tempAlertPriority[$n]['total'] = 0;
-            if(!empty($showAlertStatus)){
+            $tempAlertPriority[$n]['percentage'] = null;
+            if(!empty($showAlertPriority)){
                 
-                foreach($showAlertStatus as $status){
+                foreach($showAlertPriority as $status){
+                    
                     if($status['alert_priority'] == $priority['alert_priority_name']){
-                        $tempAlertPriority[$n]['total'] = $status['total'];
+                        $tempAlertPriority[$n]['percentage'] = $status['percentage'];
                     }
                 }
             }
             $n++;
         }
 
-        $result['showAlertSummary'] = $tempAlertPriority;
+        $result['showAlertSummary'] = array_merge($tempAlertPriority, $tempAlertStatus);
 
         
         //************************************* showGPSnotUpdatedOneDay ****************************************//
@@ -160,7 +280,7 @@ Class Helpers{
             $result['showGPSnotUpdatedOneDay'][] = [
                                                     'license_plate' => $val['license_plate'],
                                                     'last_updated'  => $val['device_time'],
-                                                    'duration'      => Carbon::now()->diffInSeconds($val['device_time'])
+                                                    'duration' => Carbon::parse($val['device_time'])->diffForHumans()
             ];
         }
         
@@ -174,8 +294,8 @@ Class Helpers{
         if(!empty($showGPSnotUpdatedThreeDay)) foreach($showGPSnotUpdatedThreeDay as $val){
             $result['showGPSnotUpdatedThreeDay'][] = [
                                                     'license_plate' => $val['license_plate'],
-                                                    'last_updated'  => $val['device_time'],
-                                                    'duration'      => Carbon::now()->diffInSeconds($val['device_time'])
+                                                    'last_updated' => $val['device_time'],
+                                                    'duration' => Carbon::parse($val['device_time'])->diffForHumans()
             ];
         }
 
@@ -295,19 +415,5 @@ Class Helpers{
         $utcdatetime = new \MongoDB\BSON\UTCDateTime($date);
         $datetime = $utcdatetime->toDateTime();
         return  $datetime->format('Y-m-d H:i:s');
-    }
-
-    public static function stringToBson($stringDate){
-        return new \MongoDB\BSON\UTCDatetime(strtotime($stringDate)*1000);
-    }
-
-    public static function speedCalculation($totalSpeed, $totalRow){
-        if(!empty($totalSpeed)){
-            $result = $totalSpeed / $totalRow;
-            $result = ($result > 0) ? (int) $result : 0;
-        }else{
-            $result = 0;
-        }
-        return $result;
     }
 }

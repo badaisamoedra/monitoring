@@ -20,9 +20,14 @@ class VehicleMaintenanceController extends BaseController
         $this->globalCrudRepo->setModel(new MaintenanceVehicle());
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = $this->globalCrudRepo->all();
+        $license_plate = $request->has('license_plate') ? $request->license_plate : '';
+        if(!empty($license_plate))
+            $data = $this->globalCrudRepo->search('license_plate', $request->query('license_plate'));
+        else
+            $data = $this->globalCrudRepo->all();
+       
         return $this->makeResponse(200, 1, null, $data);
     }
 
@@ -64,6 +69,8 @@ class VehicleMaintenanceController extends BaseController
             if(!empty($param)){
                 $vehicle = MsVehicle::where('imei_obd_number', $request->imei_obd_number_old)->first();
                 if(!empty($vehicle)){
+                    //set license_plate
+                    $input['license_plate'] = $vehicle->license_plate;
                     MsVehicle::where('vehicle_code', $vehicle->vehicle_code)->update($param);
                     //delete mwmapping
                     if(isset($param['imei_obd_number']) && !empty($param['imei_obd_number'])){

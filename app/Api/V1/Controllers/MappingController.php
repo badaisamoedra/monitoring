@@ -17,6 +17,7 @@ use App\Models\MongoMasterVehicleRelated;
 use App\Models\MongoMasterStatusVehicle;
 use App\Models\MongoMasterStatusEvent;
 use App\Models\MongoMasterEventRelated;
+use App\Models\MsStatusAlert;
 use Illuminate\Support\Facades\Mail;
 use Auth;
 use DB;
@@ -138,11 +139,11 @@ class MappingController extends BaseController
                 'simcard_number'           => $vehicle['vehicle']['simcard_number'],
                 'fuel_consumed'            => $request->total_odometer / $vehicle['vehicle']['model']['fuel_ratio'], 
                 'vehicle_description'      => $vehicle['vehicle']['brand']['brand_vehicle_name'].' '.$vehicle['vehicle']['model']['model_vehicle_name'].' '.$vehicle['vehicle']['year_of_vehicle'],
-                'moving_time'              => 0,
-                'engine_on_time'           => 0,
-                'idle_time'                => 0,
-                'park_time'                => 0,
-                'over_speed_time'          => 0,
+                // 'moving_time'              => 0,
+                // 'engine_on_time'           => 0,
+                // 'idle_time'                => 0,
+                // 'park_time'                => 0,
+                // 'over_speed_time'          => 0,
                 'category_over_speed'      => null,
                 'is_out_zone'              => false,
                 'duration_out_zone'        => 0,
@@ -199,24 +200,17 @@ class MappingController extends BaseController
         if($param['ignition'] == 1) {
             if($param['ignition'] == 1 && $param['speed'] > 0) {
                 self::$temp['vehicle_status'] = 'Moving';
-                self::$temp['moving_time'] = $this->checkDuration($param);
-            } else {
-                self::$temp['engine_on_time'] = $this->checkDuration($param);
             }
         } 
 
         if($param['ignition'] == 1) {
             if($param['ignition'] == 1 && $param['speed'] == 0){
                 self::$temp['vehicle_status'] = 'Stop';
-                self::$temp['idle_time'] = $this->checkDuration($param);
-            } else {
-                self::$temp['engine_on_time'] = $this->checkDuration($param);
             }
         }
 
         if($param['ignition'] == 0 && $param['speed'] == 0){
             self::$temp['vehicle_status'] = 'Offline';
-            self::$temp['park_time'] = $this->checkDuration($param);
         }
             
         if($param['event_type'] == 'MB_CN'){
@@ -261,7 +255,6 @@ class MappingController extends BaseController
 
             // if alert_status = Overspeed then insert duration
             if($mongoMsEventRelated->alert_name == 'Overspeed'){
-                self::$temp['over_speed_time'] = $this->checkDuration($param);
                 if($param['speed'] >= 80 && $param['speed'] <= 100)
                     self::$temp['category_over_speed'] = '80 - 100';
                 else 
@@ -326,18 +319,18 @@ class MappingController extends BaseController
        if($this->checkPolygon($point, $polygon)){
          self::$temp['zone_name'] = $zoneName;
          self::$temp['is_out_zone'] = FALSE;
-         self::$temp['duration_in_zone']  = $now->diffInMinutes($deviceTime);
+         self::$temp['duration_in_zone']  = $now->diffInSeconds($deviceTime);
        }else{
          self::$temp['zone_name'] = $zoneName;
          self::$temp['is_out_zone'] = TRUE;
-         self::$temp['duration_out_zone'] = $now->diffInMinutes($deviceTime);
+         self::$temp['duration_out_zone'] = $now->diffInSeconds($deviceTime);
        }
     }
 
     private function checkDuration($param){
         $now = Carbon::now();
         $deviceTime = Carbon::parse($param['device_time']);
-        return $now->diffInMinutes($deviceTime);
+        return $now->diffInSeconds($deviceTime);
     }
 
     private function checkPolygon($point, $polygon){
@@ -414,6 +407,58 @@ class MappingController extends BaseController
 
         $driverScoring = RptDriverScoring::create($data);
         return $driverScoring;
+    }
+
+    public function showAlertStatusDetail(Request $request){
+        $data = [];
+        if($request->has('alertPriority') && !empty($request->alertPriority)){
+            $filter = [
+                'alert_priority' => $request->alertPriority,
+                'alert_status'   => []
+            ];
+            $msStatusAlert = MsStatusAlert::select('status_alert_name')->get()->toArray();
+            if(!empty($msStatusAlert)) foreach($msStatusAlert as $statusAlert){
+                $filter['alert_status'][] = $statusAlert['status_alert_name'];
+            }
+            $data = MwMapping::raw(function($collection) use ($filter)
+                    {
+                        return $collection->aggregate([
+                            [
+                                '$match' => [
+                                    '$and' => [
+                                        ['alert_status'   => ['$in' => $filter['alert_status']]],
+                                        ['alert_priority' => $filter['alert_priority']]
+                                    ]
+                                ]
+                            ],
+                            [
+                                '$project' => array(
+                                    '_id' => 0,
+                                    'alert_status'   => '$alert_status',
+                                )
+                            ],
+                            [
+                                '$group' => array(
+                                    '_id' => [
+                                            'alert_status' => '$alert_status',
+                                        ],
+                                    'total' => [
+                                        '$sum' => 1
+                                    ]
+                                )
+                            ],
+                            [
+                                '$project' => array(
+                                    '_id' => 0,
+                                    'alert_status' => '$_id.alert_status',
+                                    'total' => '$total'
+                                )
+                            ]
+            
+                        ]);
+                    })->toArray();
+        }
+        return $this->makeResponse(200, 1, null, $data);
     }
 
     public function show(Request $request, $id){

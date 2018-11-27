@@ -22,6 +22,10 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\GpsNotUpdateThreeDay',
         'App\Console\Commands\SyncBlackBox',
         'App\Console\Commands\SyncAddress',
+        'App\Console\Commands\HistoryOutOfZone',
+        'App\Console\Commands\HistoryOverSpeedOne',
+        'App\Console\Commands\HistoryOverSpeedTwo',
+        'App\Console\Commands\HistoryFleetUtilization',
     ];
 
     /**
@@ -40,6 +44,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('gps_not_update_three_day:sync')->hourly();
         $schedule->command('get_black_box:sync')->daily();
         $schedule->command('sync_address:sync')->daily();
+        $schedule->command('history_out_of_zone:sync')->daily();
+        $schedule->command('history_over_speed_one:sync')->daily();
+        $schedule->command('history_over_speed_two:sync')->daily();
+        $schedule->command('history_fleet_utilization:sync')->daily();
         $schedule->command('log_integration:sync')->cron('0 */2 * * *'); // every 2 hours
     }
 }

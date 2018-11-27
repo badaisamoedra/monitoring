@@ -20,6 +20,20 @@ class GlobalCrudRepo{
         }
     }
 
+    public function search($field = null, $value = null, $relation = []){
+        try {
+            $query = $this->model; 
+            if(!empty($field) && !empty($value))
+                $query = $query->where($field,'like', '%'.$value.'%');
+            if(!empty($relation))
+                $query = $query->with($relation);
+
+            return $query->paginate(MAX_DATA);
+        }catch(QueryException $e){
+            throw new \Exception($e->getMessage(), 500);
+        }
+    }
+
     public function create(array $data){
         try {
             return $this->model->create($data);

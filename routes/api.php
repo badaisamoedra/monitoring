@@ -135,6 +135,8 @@ $api->version('v1', function ($api) {
             $api->put('mw-mapping/{id}', 'MappingController@update');
             $api->delete('mw-mapping/{id}', 'MappingController@destroy');
             $api->get('mw-mapping-total', 'MappingController@getTotalVehicleStatus');
+            $api->get('show-alert-status-detail', 'MappingController@showAlertStatusDetail');
+            
 
             //master address
             $api->post('export', 'MasterAddressController@store');
