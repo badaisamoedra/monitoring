@@ -72,9 +72,9 @@ class VehicleMaintenanceController extends BaseController
                             'code' => $request->imei_obd_number,
                             "description" => $vehicle->license_plate,
                             "vehicle_number" => $vehicle->chassis_number,
-                            "device_type_id" => "d037f520-aba9-11e8-ab41-091b4abb70e6",
-                            "device_model_id" => "d03cbe00-aba9-11e8-9b10-d508675f51e8",
-                            "device_group_id" => "d2865890-aba9-11e8-9799-f1184871ac2f"
+                            "device_type_id" => "29a94080-ee75-11e8-8c27-8553827c1ba1",
+                            "device_model_id" => "29afc7f0-ee75-11e8-a736-531385a7ec2d",
+                            "device_group_id" => "2c6fb400-ee75-11e8-8dbe-a5bced5f86bc"
                         ];
                         $updateParse = RestCurl::put(URL_PARSE.'/api/v1/backend/devices/'.$vehicle->reff_vehicle_id, $obj);
                         if($updateParse['status'] != '200') throw new \Exception('Failed update imei in middleware server.');

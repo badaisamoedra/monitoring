@@ -140,6 +140,9 @@ $api->version('v1', function ($api) {
             $api->post('export', 'MasterAddressController@store');
             $api->get('count-address', 'MasterAddressController@count');
             $api->get('address-detail', 'MasterAddressController@show');
+
+            //provision bulk
+            $api->post('provision', 'ProvisionBulk@store');
         });
     });
 
