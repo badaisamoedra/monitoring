@@ -28,10 +28,10 @@ class MasterAddressController extends BaseController
             $path  = base_path().'/public/'.$fileName;
             $datas = Excel::load( $path , function($reader) {})->get();
             foreach($datas as $data){
-                $checkData = MongoMasterAddress::where('longlat', $data->longlat)->first();
-                if (!empty($checkData)) {
-                    continue;
-                }
+                // $checkData = MongoMasterAddress::where('longlat', $data->longlat)->first();
+                // if (!empty($checkData)) {
+                //     continue;
+                // }
                 $dataSave = [
                     'latitude'			=> $data->latitude,
                     'longitude'			=> $data->longitude,
