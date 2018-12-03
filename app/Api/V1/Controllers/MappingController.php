@@ -18,6 +18,7 @@ use App\Models\MongoMasterStatusVehicle;
 use App\Models\MongoMasterStatusEvent;
 use App\Models\MongoMasterEventRelated;
 use App\Models\MsStatusAlert;
+use App\Models\MongoMasterAddress;
 use Illuminate\Support\Facades\Mail;
 use Auth;
 use DB;
@@ -281,16 +282,11 @@ class MappingController extends BaseController
 
     private function getAddress($param){
         if(!empty($param['latitude']) && !empty($param['longitude'])){
-            //Send request and receive json data by address
-            // $geocodeFromLatLong = file_get_contents('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='.trim($param['latitude']).'&lon='.trim($param['longitude']).'&limit=1&email=badai.samoedra@gmail.com'); 
-            
-            // $output = json_decode($geocodeFromLatLong);
-            //Get address from json data
-            // $address = !empty($output) ? $output->display_name:'';
-            $address = null;
+            $longlat =  $param['longitude'].$param['latitude'];
+            $checkFromMasterAddress = MongoMasterAddress::where("longlat",  $longlat)->first();
             //Return address of the given latitude and longitude
-            if(!empty($address))
-               self::$temp['last_location'] = $address;
+            if(!empty($checkFromMasterAddress))
+               self::$temp['last_location'] = $checkFromMasterAddress->address;
             else
                self::$temp['last_location'] = null;
             
