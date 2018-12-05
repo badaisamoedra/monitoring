@@ -66,7 +66,7 @@ class UserProfileController extends BaseController
     {
         $this->validate($request, [
             'email'      => 'sometimes|required',
-            'password'   => 'sometimes|required',
+            //  'password'   => 'sometimes|required',
             'first_name' => 'sometimes|required',
             'last_name'  => 'sometimes|required',
             'no_telp'    => 'sometimes|required',
@@ -77,6 +77,9 @@ class UserProfileController extends BaseController
             'status'     => 'sometimes|required',
         ]);
         $input = $request->except(['token']);
+	if (!empty($request->password)){
+		$input['password'] = Hash::make($request->password);
+	}
         $update = $this->globalCrudRepo->update('user_profile_code', $id, $input);
         return $this->makeResponse(200, 1, null, $update);
     }

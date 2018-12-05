@@ -150,6 +150,7 @@ class MappingController extends BaseController
                 'duration_out_zone'        => 0,
                 'duration_in_zone'         => 0,
                 'black_box'                => false
+		//'last_location'            => null
             ];
             
             // additional field
@@ -267,7 +268,7 @@ class MappingController extends BaseController
                 if(in_array('NTF-0001', $notif)) 
                     Helpers::sendTelegram(self::$temp);
 
-                if(in_array('NTF-0003', $notif)){
+                if(in_array('NTF-0008', $notif)){
                     $pushData = ['topic' => 'notification', 'data' => Helpers::pushNotificationFormat(self::$temp)];
                     Helpers::sendToClient($pushData);
                 } 
