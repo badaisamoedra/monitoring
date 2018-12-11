@@ -8,6 +8,7 @@ use App\Models\TransactionVehiclePair;
 use App\Models\MongoMasterStatusVehicle;
 use App\Models\MongoMasterStatusEvent;
 use App\Models\MongoMasterEventRelated;
+use App\Models\MongoLogsReport;
 use App\Models\MsStatusAlertPriority;
 use App\Models\MsVehicle;
 use App\Models\BestDriver;
@@ -214,7 +215,7 @@ Class Helpers{
     }
 
     public static function pushNotificationFormat($param){
-        $txt  ="<strong>Gpstracking:</strong>\n";
+        $txt  ="Gpstracking: \n";
         $txt .="No.Pol : ".$param['license_plate']." | ";
         $txt .="Waktu : ".Carbon::parse($param['device_time'])->format('Y-m-d H:i:s')." | ";
         $txt .="Alert : ".$param['alert_status']." | ";
@@ -309,5 +310,12 @@ Class Helpers{
             $result = 0;
         }
         return $result;
+    }
+
+    public static function logSchedulerReport($status, $file, $message){
+        $log['status'] = $status;
+        $log['file_function'] = $file;
+        $log['message'] = $message;
+        MongoLogsReport::create($log);
     }
 }

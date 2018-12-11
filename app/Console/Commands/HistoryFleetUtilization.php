@@ -133,7 +133,6 @@ class HistoryFleetUtilization extends Command
 							$fuelComsumedPark  = $hsty['fuel_consumed'];
 
 							//store in rpt_utilization
-							$hsty['park_time'] = $durationParkTime;
 							$checking = RptUtilization::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
 							if(empty($checking->first())){
 								$hsty['speed'] = 0;
@@ -311,7 +310,7 @@ class HistoryFleetUtilization extends Command
 			}
 			echo 'Success';
 		} catch(\Exception $e) {
-            print_r($e->getMessage());
+			Helpers::logSchedulerReport('ERROR', 'Scheduler History Fleet Utilization', $e->getMessage());
 		}
 
   	}

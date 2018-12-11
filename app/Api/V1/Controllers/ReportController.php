@@ -12,6 +12,7 @@ use App\Models\MongoMasterEventRelated;
 use App\Models\MongoGpsNotUpdateOneDay;
 use App\Models\MongoGpsNotUpdateThreeDay;
 use App\Models\RptUtilization;
+use App\Models\RptOverSpeed;
 use Carbon\Carbon;
 use Auth;
 
@@ -532,7 +533,7 @@ class ReportController extends BaseController
 
     public function reportOverSpeed(Request $request){
         $this->filters($request);
-        $data = MwMappingHistory::raw(function($collection) use ($request)
+        $data = RptOverSpeed::raw(function($collection) use ($request)
         {
             $search['$match']['alert_status'] = 'Overspeed';
             if($request->has('license_plate') && !empty($request->license_plate)){

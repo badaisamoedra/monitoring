@@ -9,6 +9,7 @@ use App\Models\MwMapping;
 use App\Models\MwMappingHistory;
 use App\Models\RptOutOfZone;
 use Carbon\Carbon;
+use App\Helpers;
 
 class HistoryOutOfZone extends Command
 {
@@ -48,71 +49,90 @@ class HistoryOutOfZone extends Command
 			ini_set("memory_limit",-1);
 			ini_set('max_execution_time', 0);
 			
-			//get mapping to collect license_plate
-			$mwMapping = MwMapping::get()->toArray();
+			$date      = Carbon::now()->subHours(24)->format('Y-m-d');
+			$startDate = new \MongoDB\BSON\UTCDatetime(strtotime($date.' 00:00:00')*1000);
+			$endDate   = new \MongoDB\BSON\UTCDatetime(strtotime($date.' 23:59:59')*1000);
+
+			//get vehicle that isOutOfZone = true based on startdate & enddate
+			$mwMapping = MwMappingHistory::whereBetween('device_time', [$startDate, $endDate])
+											->where('is_out_zone', true)
+											->groupBy('imei')->get(['license_plate'])->toArray();
+
 			if(!empty($mwMapping)) foreach($mwMapping as $mwMapping){
-				$date      = Carbon::now()->subHours(24)->format('Y-m-d');
-				$startDate = new \MongoDB\BSON\UTCDatetime(strtotime($date.' 00:00:00')*1000);
-				$endDate   = new \MongoDB\BSON\UTCDatetime(strtotime($date.' 23:59:59')*1000);
 				$getHistory = MwMappingHistory::whereBetween('device_time', [$startDate, $endDate])
 											->where('license_plate', $mwMapping['license_plate'])
 											->orderBy('device_time', 'asc')
 											->get();
 											
-				$n 			 = 0;
-				$count       = $getHistory->count();
-				$duration    = 0;
-				$isOutOfZone = 0;
+				$count = $getHistory->count();
+				//OutOfZone Time Initialize
+				$counterOutOfZone = $durationOutOfZone = $isOutOfZone  = 0;
+
 				if(!empty($getHistory)) foreach($getHistory->toArray() as $key => $hsty){
 					if($hsty['is_out_zone']){
-						if($n > 0){
-							$isOutOfZone = 1;
+						$isOutOfZone = 1;
+						if($counterOutOfZone > 0){
 							$lastRow = MwMappingHistory::select('license_plate','device_time', 'is_out_zone')
 													->where('device_time' , '<', new \MongoDB\BSON\UTCDatetime(strtotime($hsty['device_time'])*1000))
 													->where('is_out_zone', true)
 													->where('license_plate', $hsty['license_plate'])
-													->orderBy('device_time', 'desc')->first()->toArray();
-							$start = Carbon::parse($lastRow['device_time']);
-							$duration += ($start->diffInSeconds($hsty['device_time']));
+													->orderBy('device_time', 'desc')->first();
+							if(!empty($lastRow)){
+								$start = Carbon::parse($lastRow->device_time);
+								$durationOutOfZone += ($start->diffInSeconds($hsty['device_time']));
+								echo $hsty['device_time']. ' - '. $start." ";
+								echo $start->diffInSeconds($hsty['device_time'])."\n";
+							}
+
+							//jika row terakhir isMoving == true
+							if(($key == ($count - 1))){
+								//store in rpt_utilization
+								$checking = RptOutOfZone::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
+								if(empty($checking->first())){
+									$hsty['out_zone_time'] = $durationOutOfZone;
+									RptOutOfZone::create($hsty);
+									echo 'Total OutOfzone Time = '.$durationOutOfZone."\n";
+								}
+								// Reset counterOutOfZone, durationOutOfZone, isOutOfZone
+								$counterOutOfZone = $durationOutOfZone = $isOutOfZone  = 0;
+							}
+							
+						}else{
+							$counterOutOfZone++;
 						}
 
-						//jika row terakhir is_out_zone == true
-						if(($key == ($count - 1))){
-							//store in rpt_out_of_zone
-							$checking = RptOutOfZone::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
-							if(empty($checking->first())){
-								$hsty['out_zone_time'] = $duration;
-								RptOutOfZone::create($hsty);
-							}
-						}
-						
 					}else{
-						//get is_out_zone yg bernilai false dari  (out of zone = true secara berturut2)
+						//get isOutOfZone == false dari  (isOutOfZone = true secara berturut2)
 						if($isOutOfZone){
 							$lastRow = MwMappingHistory::select('license_plate','device_time', 'is_out_zone')
 													->where('device_time' , '<', new \MongoDB\BSON\UTCDatetime(strtotime($hsty['device_time'])*1000))
+													->where('is_out_zone', true)
 													->where('license_plate', $hsty['license_plate'])
-													->orderBy('device_time', 'desc')->first()->toArray();
-							$start = Carbon::parse($lastRow['device_time']);
-							$duration+= ($start->diffInSeconds($hsty['device_time']));
-							
+													->orderBy('device_time', 'desc')->first();
+
+							if(!empty($lastRow)){
+								$start = Carbon::parse($lastRow->device_time);
+								$durationOutOfZone += ($start->diffInSeconds($hsty['device_time']));
+								echo $hsty['device_time']. ' - '. $start." ";
+								echo $start->diffInSeconds($hsty['device_time'])."\n";
+							}
+
 							//store in rpt_out_of_zone
 							$checking = RptOutOfZone::where('imei', $hsty['imei'])->where('device_time', Helpers::stringToBson($hsty['device_time']));
 							if(empty($checking->first())){
-								$hsty['out_zone_time'] = $duration;
+								$hsty['out_zone_time'] = $durationOutOfZone;
 								RptOutOfZone::create($hsty);
+								echo 'Total OutOfzone Time = '.$durationOutOfZone."\n";
 							}
+							// Reset counterOutOfZone, durationOutOfZone, isOutOfZone
+							$counterOutOfZone = $durationOutOfZone = $isOutOfZone  = 0;
 						}
-						$isOutOfZone = 0;
 					}
-					
-					echo $n."\n";
-					$n++;
 				}
 			}
 			echo 'Success';
 		} catch(\Exception $e) {
-            print_r($e->getMessage());
+            Helpers::logSchedulerReport('ERROR', 'Scheduler History Out Of Zone', $e->getMessage());
 		}
   	}
 }
