@@ -149,7 +149,9 @@ class MappingController extends BaseController
                 'is_out_zone'              => false,
                 'duration_out_zone'        => 0,
                 'duration_in_zone'         => 0,
-                'black_box'                => false
+                'black_box'                => false,
+                'vehicle_status'           => null,
+                'vehicle_status_color'     => null
             ];
             
             // additional field
