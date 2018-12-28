@@ -204,19 +204,12 @@ class MappingController extends BaseController
             if($param['ignition'] == 1 && $param['speed'] > 0) {
                 self::$temp['vehicle_status'] = 'Moving';
             }
-        } 
-
-        if($param['ignition'] == 1) {
             if($param['ignition'] == 1 && $param['speed'] == 0){
                 self::$temp['vehicle_status'] = 'Stop';
             }
-        }
-
-        if($param['ignition'] == 0 && $param['speed'] == 0){
+        }elseif($param['ignition'] == 0 && $param['speed'] == 0){
             self::$temp['vehicle_status'] = 'Offline';
-        }
-            
-        if($param['event_type'] == 'MB_CN'){
+        }elseif($param['event_type'] == 'MB_CN'){
             self::$temp['vehicle_status'] = 'Unpluged';
             //set poi
             $zoneName = null;
@@ -236,8 +229,10 @@ class MappingController extends BaseController
                 }
             }
             self::$temp['poi'] = $zoneName;
+        }else{
+            throw new \Exception("Error Processing Request. Cannot define vehicle status");    
         }
-
+        
         // get vehicle status color
         if(isset(self::$temp['vehicle_status'])){
             $msStatusVehicle = MongoMasterStatusVehicle::where('status_vehicle_name', self::$temp['vehicle_status'])->first();
