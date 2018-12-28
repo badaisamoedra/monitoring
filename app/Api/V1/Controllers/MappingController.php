@@ -200,16 +200,23 @@ class MappingController extends BaseController
     }
 
     private function vehicleStatus($param, $vehicle){
-        if($param['ignition'] == 1) {
-            if($param['ignition'] == 1 && $param['speed'] > 0) {
-                self::$temp['vehicle_status'] = 'Moving';
-            }
-            if($param['ignition'] == 1 && $param['speed'] == 0){
-                self::$temp['vehicle_status'] = 'Stop';
-            }
-        }elseif($param['ignition'] == 0 && $param['speed'] == 0){
+	if($param['ignition'] == 0 && $param['speed'] > 0){
+            throw new \Exception("Error Processing Request. Cannot define vehicle status");
+        }
+
+        if($param['ignition'] == 1 && $param['speed'] > 0) {
+            self::$temp['vehicle_status'] = 'Moving';
+        }
+
+        if($param['ignition'] == 1 && $param['speed'] == 0){
+             self::$temp['vehicle_status'] = 'Stop';
+        }
+        
+	if($param['ignition'] == 0 && $param['speed'] == 0){
             self::$temp['vehicle_status'] = 'Offline';
-        }elseif($param['event_type'] == 'MB_CN'){
+        }
+	
+	if($param['event_type'] == 'MB_CN'){
             self::$temp['vehicle_status'] = 'Unpluged';
             //set poi
             $zoneName = null;
@@ -229,8 +236,6 @@ class MappingController extends BaseController
                 }
             }
             self::$temp['poi'] = $zoneName;
-        }else{
-            throw new \Exception("Error Processing Request. Cannot define vehicle status");    
         }
         
         // get vehicle status color

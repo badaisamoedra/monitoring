@@ -43,8 +43,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('gps_not_update_three_day:sync')->hourly();
         $schedule->command('get_black_box:sync')->daily();
         $schedule->command('sync_address:sync')->daily();
-        $schedule->command('history_out_of_zone:sync')->daily();
-        $schedule->command('history_over_speed:sync')->daily();
+        $schedule->command('history_out_of_zone:sync')->dailyAt('23:00');
+        $schedule->command('history_over_speed:sync')->dailyAt('04:00');
         $schedule->command('history_fleet_utilization:sync')->daily();
         $schedule->command('log_integration:sync')->cron('0 */2 * * *'); // every 2 hours
     }
