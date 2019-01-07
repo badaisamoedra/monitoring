@@ -205,7 +205,7 @@ class HistoryFleetUtilization extends Command
 														->orderBy('device_time', 'desc')->first();
 							if(!empty($lastRow)){
 								$start = Carbon::parse($lastRow->device_time);
-								$durationMovingkTime += ($start->diffInSeconds($hsty['device_time']));
+								$durationMovingTime += ($start->diffInSeconds($hsty['device_time']));
 								echo $hsty['device_time']. ' - '. $start." ";
 								echo $start->diffInSeconds($hsty['device_time'])."\n";
 							}

@@ -22,6 +22,7 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\GpsNotUpdateThreeDay',
         'App\Console\Commands\SyncBlackBox',
         'App\Console\Commands\SyncAddress',
+	    'App\Console\Commands\SyncIntegration',
         'App\Console\Commands\HistoryOutOfZone',
         'App\Console\Commands\HistoryOverSpeed',
         'App\Console\Commands\HistoryFleetUtilization',
@@ -41,11 +42,11 @@ class Kernel extends ConsoleKernel
         $schedule->command('master_status_vehicle:sync')->everyFiveMinutes();
         $schedule->command('gps_not_update_one_day:sync')->hourly();
         $schedule->command('gps_not_update_three_day:sync')->hourly();
-        $schedule->command('get_black_box:sync')->daily();
-        $schedule->command('sync_address:sync')->daily();
-        $schedule->command('history_out_of_zone:sync')->daily();
-        $schedule->command('history_over_speed:sync')->daily();
-        $schedule->command('history_fleet_utilization:sync')->daily();
+        $schedule->command('get_black_box:sync')->dailyAt('21:00');
+        $schedule->command('sync_address:sync')->dailyAt('18:00');
+        $schedule->command('history_out_of_zone:sync')->dailyAt('23:00');
+        $schedule->command('history_over_speed:sync')->dailyAt('04:00');
+        $schedule->command('history_fleet_utilization:sync')->daily('05:00');
         $schedule->command('log_integration:sync')->cron('0 */2 * * *'); // every 2 hours
     }
 }
