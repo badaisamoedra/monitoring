@@ -178,7 +178,7 @@ class ReportController extends BaseController
                         'idle_time'         => ['$sum'   => '$idle_time'],
                         'total_mileage'     => ['$last'   => '$total_odometer'],
                         'speed'             => ['$sum'   => '$speed'],
-                        'fuel'              => ['$sum'   => 'fuel_consumed'],
+                        'fuel'              => ['$sum'   => '$fuel_consumed'],
                         // 'duration_out_zone' => ['$sum'   => '$duration_out_zone'], di take out
                         'start_date'        => ['$first' => '$device_time'],
                         'end_date'          => ['$last'  => '$device_time'],
@@ -199,7 +199,12 @@ class ReportController extends BaseController
                         'engine_on_time'    => ['$add'    => ['$moving_time', '$idle_time']],
                         'duration'          => ['$ifNull' => [0, $duration]],
                         'average_speed'     => ['$divide' => [ '$speed', '$total_data']],
-                        'rasio_engine_on'   => ['$ifNull' => [0, ['$divide' => ['$engine_on_time', $duration]]]],
+                        'rasio_engine_on'   => 
+                                                [
+                                                    '$multiply' => [[
+                                                        '$divide' => [['$add' => ['$moving_time', '$idle_time']], $duration]
+                                                    ], 100],
+                                                ],
                         // 'duration_out_zone' => '$duration_out_zone', di take out
                         'start_date'        => '$start_date',
                         'end_date'          => '$end_date'
