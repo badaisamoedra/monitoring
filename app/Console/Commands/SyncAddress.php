@@ -46,7 +46,7 @@ class SyncAddress extends Command
 			ini_set("memory_limit",-1);
 			ini_set('max_execution_time', 0);
 			
-			$getHistory  = MwMappingHistory::where('last_location', null)->get()->toArray();
+			$getHistory  = MwMappingHistory::where('last_location', null)->where('event_type', '!=', 'SAMPLING')->get()->toArray();
 			$n = 1;
             if(!empty($getHistory)) foreach($getHistory as $hsty){
                 sleep(2);
