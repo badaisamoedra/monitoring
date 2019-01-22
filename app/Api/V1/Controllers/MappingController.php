@@ -70,6 +70,7 @@ class MappingController extends BaseController
                 'latitude'                 => $request->latitude,
                 'longitude'                => $request->longitude,
                 'location'                 => $request->location,
+                'longlat'                  => $request->longitude.$request->latitude,
                 'altitude'                 => $request->altitude,
                 'direction'                => $request->direction,
                 'speed'                    => $request->speed,
@@ -172,6 +173,7 @@ class MappingController extends BaseController
             }
 
             // insert to history
+            self::$temp['location_coordinate'] = ['type' => 'Point', 'coordinates' => [$request->longitude, $request->latitude]];
             MwMappingHistory::create(self::$temp);
 
             // send data to client that subscribe dashboard
