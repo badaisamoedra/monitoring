@@ -49,6 +49,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('history_over_speed:sync')->dailyAt('04:00');
         $schedule->command('history_fleet_utilization:sync')->daily('08:00');
         $schedule->command('log_integration:sync')->cron('0 */2 * * *'); // every 2 hours
-        // $schedule->command('test_address:sync')->dailyAt('02:00'); // every 2am
+        $schedule->command('test_address:sync')->dailyAt('02:00'); // every 2am
     }
 }
