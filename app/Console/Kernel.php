@@ -21,12 +21,13 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\GpsNotUpdateThreeDay',
         'App\Console\Commands\GpsNotUpdateThreeDay',
         'App\Console\Commands\SyncBlackBox',
-        'App\Console\Commands\SyncAddress',
+        // 'App\Console\Commands\SyncAddress',
 	    'App\Console\Commands\SyncIntegration',
         'App\Console\Commands\HistoryOutOfZone',
         'App\Console\Commands\HistoryOverSpeed',
         'App\Console\Commands\HistoryFleetUtilization',
-        'App\Console\Commands\TestNearAddress',
+        'App\Console\Commands\SyncNearAddress',
+        'App\Console\Commands\SyncNearAddress2',
     ];
 
     /**
@@ -49,6 +50,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('history_over_speed:sync')->dailyAt('04:00');
         $schedule->command('history_fleet_utilization:sync')->daily('08:00');
         $schedule->command('log_integration:sync')->cron('0 */2 * * *'); // every 2 hours
-        $schedule->command('test_address:sync')->dailyAt('02:00'); // every 2am
+        $schedule->command('sync_near_address:sync')->dailyAt('02:00'); // every 2am
+        $schedule->command('sync_near_address_2:sync')->dailyAt('12:00'); // every 12 siang
     }
 }

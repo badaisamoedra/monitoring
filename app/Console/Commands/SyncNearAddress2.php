@@ -6,25 +6,25 @@ use Illuminate\Support\Facades\DB;
 
 use App\Repositories\GlobalCrudRepo as GlobalCrudRepo;
 use App\Models\TestAddress;
-use App\Models\MongoLogsSync;
+use App\Models\MongoLogsFillAddress;
 use App\Models\MongoMasterAddress;
 
 
-class TestNearAddress extends Command
+class SyncNearAddress2 extends Command
 {
 	/**
 	 * The name and signature of the console command.
 	 *
 	 * @var string
 	 */
-	protected $signature = 'test_address:sync';
+	protected $signature = 'sync_near_address_2:sync';
 
 	/**
 	 * The console command description.
 	 *
 	 * @var string
 	 */
-	protected $description = 'test address';
+	protected $description = 'sync near address at 12.00';
 
 	/**
 	 * Create a new command instance.
@@ -44,15 +44,19 @@ class TestNearAddress extends Command
 	 */
 	public function handle()
 	{
+		$start_time = date('Y-m-d H:i:s');
+        $time_start = microtime(true); 
 		try{
-			$time_start = microtime(true); 
+			ini_set("memory_limit",-1);
+			ini_set('max_execution_time', 0);
 
 			$tempLonglat = [];
 			$needToGetFromOpenStreet = [];
 			$data = \DB::connection('mongodb')->collection('mw_mapping_history')
-											  ->whereNull('last_location')
-											  ->get();
-											  
+                                              ->whereNull('last_location')
+                                              ->take(200000)
+                                              ->get();
+			dd($data);					  
 			if(!empty($data)){
 				foreach($data as $val){
 					if(in_array($val['longlat'], $tempLonglat)) continue;
@@ -104,9 +108,9 @@ class TestNearAddress extends Command
 
 					sleep(2);
 					//Send request and receive json data by address
-					$geocodeFromLatLong = file_get_contents('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='.trim($val['latitude']).'&lon='.trim($val['longitude']).'&limit=1&email=fejaena.2@gmail.com'); 
+					$geocodeFromLatLong = file_get_contents('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='.trim($val['latitude']).'&lon='.trim($val['longitude']).'&limit=1&email=fejaena.5@gmail.com'); 
 					$output    = json_decode($geocodeFromLatLong);
-					$address   = !empty($output) ? $output->display_name: null;
+					$address   = $this->formatAddress($output);
 					
 					$tempLonglat = array_merge($tempLonglat, $val['detail']);
 					$tempLonglat = array_unique($tempLonglat);
@@ -119,23 +123,40 @@ class TestNearAddress extends Command
 			}
 			$saveLogs = [
 				'status' 		 => 'SUCCESS',
-				'file_function'  => 'New Sync Address',
+				'file_function'  => 'New Sync Address 2 (Start = '. $start_time.' End = '.date('Y-m-d H:i:s').')',
 				'execution_time' => microtime(true) - $time_start,
-				'Message' 		 => 'Success sync data address'
+				'Message' 		 => 'Success sync data address '.date('Y-m-d H:i:s')
 			];
-			$logs = MongoLogsSync::create($saveLogs);
+			$logs = MongoLogsFillAddress::create($saveLogs);
 			echo 'success';
 		} catch(\Exception $e) {
 			$saveLogs = [
 				'status' 		 => 'ERROR',
-				'file_function'  => 'New Sync Address',
+				'file_function'  => 'New Sync Address 2 (Start = '. $start_time.' End = '.date('Y-m-d H:i:s').')',
 				'execution_time' => microtime(true) - $time_start,
-				'Message' 		 => $e->getMessage()
+				'Message' 		 => $e->getMessage().' '.date('Y-m-d H:i:s')
 			];
-			$logs = MongoLogsSync::create($saveLogs);
+			$logs = MongoLogsFillAddress::create($saveLogs);
             return $logs;
 		}
 		
 		
-  	}
+	}
+
+	private function formatAddress($output){
+		if(!empty($output)){
+			$village        = isset($output->address->village) ? $output->address->village.', ' : '';
+			$state_district = isset($output->address->state_district) ? $output->address->state_district : '';
+			$state          = isset($output->address->state) ? $output->address->state.', ' : '';
+			$country        = isset($output->address->country) ? $output->address->country.'.' : '';
+			if(empty($state) && !empty($state_district)){
+				$state = $state_district;
+			}
+			$address   = $village.$state.$country;
+		}else{
+			$address   = null;
+		}
+		return $address;
+	}
+	  
 }
