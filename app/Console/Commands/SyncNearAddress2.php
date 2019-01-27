@@ -44,6 +44,7 @@ class SyncNearAddress2 extends Command
 	 */
 	public function handle()
 	{
+		date_default_timezone_set('Asia/Jakarta');
 		$start_time = date('Y-m-d H:i:s');
         $time_start = microtime(true); 
 		try{
@@ -56,7 +57,7 @@ class SyncNearAddress2 extends Command
                                               ->whereNull('last_location')
                                               ->take(200000)
                                               ->get();
-			dd($data);					  
+						  
 			if(!empty($data)){
 				foreach($data as $val){
 					if(in_array($val['longlat'], $tempLonglat)) continue;
@@ -108,7 +109,7 @@ class SyncNearAddress2 extends Command
 
 					sleep(2);
 					//Send request and receive json data by address
-					$geocodeFromLatLong = file_get_contents('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='.trim($val['latitude']).'&lon='.trim($val['longitude']).'&limit=1&email=fejaena.5@gmail.com'); 
+					$geocodeFromLatLong = file_get_contents('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='.trim($val['latitude']).'&lon='.trim($val['longitude']).'&limit=1&email=fejaena.6@gmail.com'); 
 					$output    = json_decode($geocodeFromLatLong);
 					$address   = $this->formatAddress($output);
 					
@@ -137,7 +138,7 @@ class SyncNearAddress2 extends Command
 				'Message' 		 => $e->getMessage().' '.date('Y-m-d H:i:s')
 			];
 			$logs = MongoLogsFillAddress::create($saveLogs);
-            return $logs;
+            echo 'error';
 		}
 		
 		
@@ -146,7 +147,7 @@ class SyncNearAddress2 extends Command
 	private function formatAddress($output){
 		if(!empty($output)){
 			$village        = isset($output->address->village) ? $output->address->village.', ' : '';
-			$state_district = isset($output->address->state_district) ? $output->address->state_district : '';
+			$state_district = isset($output->address->state_district) ? $output->address->state_district.', ' : '';
 			$state          = isset($output->address->state) ? $output->address->state.', ' : '';
 			$country        = isset($output->address->country) ? $output->address->country.'.' : '';
 			if(empty($state) && !empty($state_district)){

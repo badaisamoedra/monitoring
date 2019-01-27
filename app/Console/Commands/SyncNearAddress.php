@@ -44,6 +44,7 @@ class SyncNearAddress extends Command
 	 */
 	public function handle()
 	{
+		date_default_timezone_set('Asia/Jakarta');
 		$start_time = date('Y-m-d H:i:s');
 		$time_start = microtime(true); 
 		try{
@@ -145,7 +146,7 @@ class SyncNearAddress extends Command
 	private function formatAddress($output){
 		if(!empty($output)){
 			$village        = isset($output->address->village) ? $output->address->village.', ' : '';
-			$state_district = isset($output->address->state_district) ? $output->address->state_district : '';
+			$state_district = isset($output->address->state_district) ? $output->address->state_district.', ' : '';
 			$state          = isset($output->address->state) ? $output->address->state.', ' : '';
 			$country        = isset($output->address->country) ? $output->address->country.'.' : '';
 			if(empty($state) && !empty($state_district)){
