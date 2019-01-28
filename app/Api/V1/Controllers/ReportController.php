@@ -353,7 +353,7 @@ class ReportController extends BaseController
                                         ]
                     ],
                     'satellite'      => '$satellite',
-                    'accu'           => '$internal_battery_voltage',
+                    'accu'           => '$external_power_voltage',
                     'gsm_signal'     => '$gsm_signal_level',
                     'address'        => '$last_location',
                 )

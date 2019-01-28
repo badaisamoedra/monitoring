@@ -146,9 +146,13 @@ class SyncNearAddress extends Command
 	private function formatAddress($output){
 		if(!empty($output)){
 			$village        = isset($output->address->village) ? $output->address->village.', ' : '';
+			$county         = isset($output->county) ? $output->county.', ' : '';
 			$state_district = isset($output->address->state_district) ? $output->address->state_district.', ' : '';
 			$state          = isset($output->address->state) ? $output->address->state.', ' : '';
 			$country        = isset($output->address->country) ? $output->address->country.'.' : '';
+			if(empty($village) && !empty($county)){
+				$village = $county;
+			}
 			if(empty($state) && !empty($state_district)){
 				$state = $state_district;
 			}
