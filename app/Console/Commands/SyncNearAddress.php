@@ -54,6 +54,7 @@ class SyncNearAddress extends Command
 			$tempLonglat = [];
 			$needToGetFromOpenStreet = [];
 			$data = \DB::connection('mongodb')->collection('mw_mapping_history')
+											  ->timeout(-1)
 											  ->whereNull('last_location')
 											  ->get();
 								  
@@ -61,6 +62,7 @@ class SyncNearAddress extends Command
 				foreach($data as $val){
 					if(in_array($val['longlat'], $tempLonglat)) continue;
 					$getRadius = \DB::connection('mongodb')->collection('mw_mapping_history')
+									->timeout(-1)
 									->select('longlat')->distinct('longlat')
 									->where('location_coordinate', 'near', [
 														'$geometry' => [
@@ -85,6 +87,7 @@ class SyncNearAddress extends Command
 							$address = $checkFromMasterAddress->address;
 							// update address
 							\DB::connection('mongodb')
+									->timeout(-1)
 									->collection('mw_mapping_history')
 									->whereIn('longlat', $getRadius)
 									->update(['last_location' => $address]);
@@ -117,6 +120,7 @@ class SyncNearAddress extends Command
 					// update address
 					\DB::connection('mongodb')
 							->collection('mw_mapping_history')
+							->timeout(-1)
 							->whereIn('longlat',  $val['detail'])
 							->update(['last_location' => $address]);
 				}
