@@ -72,7 +72,7 @@ class SyncNearAddress extends Command
 																$val['latitude']
 															],
 														],
-														'$maxDistance' => 500,
+														'$maxDistance' => 1500,
 								])->get();
 																
 					if(!empty($getRadius)){
