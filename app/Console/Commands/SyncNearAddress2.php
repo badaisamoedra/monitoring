@@ -121,6 +121,7 @@ class SyncNearAddress2 extends Command
 					// update address
 					\DB::connection('mongodb')
 							->collection('mw_mapping_history')
+							->timeout(-1)
 							->whereIn('longlat',  $val['detail'])
 							->update(['last_location' => $address]);
 				}
