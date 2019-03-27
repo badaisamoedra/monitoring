@@ -32,26 +32,27 @@ class VehicleController extends BaseController
 
     public function store(Request $request)
     {
+        
+        $this->validate($request, [
+            'license_plate' => 'required',
+            'imei_obd_number' => 'required',
+            'simcard_number' => 'required',
+            'year_of_vehicle' => 'required',
+            'color_vehicle' => 'required',
+            'brand_vehicle_code' => 'required',
+            'model_vehicle_code' => 'required',
+            'type_vehicle' => 'required',
+            'chassis_number' => 'required',
+            'machine_number' => 'required',
+            'date_stnk' => 'required',
+            'date_installation' => 'required',
+            'speed_limit' => 'required',
+            'odometer' => 'required',
+            'area_code' => 'required',
+            'status'=> 'required',
+        ]);
+            
         try{
-            $this->validate($request, [
-                'license_plate' => 'required',
-                'imei_obd_number' => 'required',
-                'simcard_number' => 'required',
-                'year_of_vehicle' => 'required',
-                'color_vehicle' => 'required',
-                'brand_vehicle_code' => 'required',
-                'model_vehicle_code' => 'required',
-                'type_vehicle' => 'required',
-                'chassis_number' => 'required',
-                'machine_number' => 'required',
-                'date_stnk' => 'required',
-                'date_installation' => 'required',
-                'speed_limit' => 'required',
-                'odometer' => 'required',
-                'area_code' => 'required',
-                'status'=> 'required',
-            ]);
-
             DB::beginTransaction();
             $lastId = $this->globalCrudRepo->last() ? $this->globalCrudRepo->last()->id : 0;
             $input  = [
