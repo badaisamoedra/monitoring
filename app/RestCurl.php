@@ -8,15 +8,15 @@ Class RestCurl {
       'Accept: application/json',
       'Content-Type: application/json',
       'Authorization: Bearer '.ACCESS_TOKEN, 
-      'client-id : '. CLIENT_ID,
-      'client-secret : '. CLIENT_SECRET,
-      'client-token-id : '. CLIENT_TOKEN_ID,
-      'client-token-secret : '. CLIENT_TOKEN_SECRET,
-      'access_token : '. ACCESS_TOKEN,
-      'refresh_token : '. REFRESH_TOKEN,
-      'username : '. USERNAME_PARSE,
-      'password : '. PASSWORD_PARSE,
-      'scope : '. SCOPE
+      // 'client-id : '. CLIENT_ID,
+      // 'client-secret : '. CLIENT_SECRET,
+      // 'client-token-id : '. CLIENT_TOKEN_ID,
+      // 'client-token-secret : '. CLIENT_TOKEN_SECRET,
+      // 'access_token : '. ACCESS_TOKEN,
+      // 'refresh_token : '. REFRESH_TOKEN,
+      // 'username : '. USERNAME_PARSE,
+      // 'password : '. PASSWORD_PARSE,
+      // 'scope : '. SCOPE
   ];
     $curl = curl_init();
      
